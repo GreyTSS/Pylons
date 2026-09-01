@@ -12,6 +12,7 @@ import java.util.List;
 
 public class PylonBlockEntity extends BlockEntity {
     private double RANGE;
+    private boolean INVERTED;
 
     private static List<PylonBlockEntity> LOADED_PYLONS = new ArrayList<>();
 
@@ -36,7 +37,7 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
     public void setRange(double range) {
-        RANGE = range;
+        this.RANGE = range;
     }
 
     public AABB getRange() {
@@ -48,7 +49,13 @@ public class PylonBlockEntity extends BlockEntity {
         return effectArea;
     }
 
+    public void setInverted(boolean inverted) {
+        this.INVERTED = inverted;
+    }
 
+    public boolean isInverted() {
+        return INVERTED;
+    }
 
     public boolean checkRange(BlockPos pos) {
         AABB effectArea = getRange();
@@ -57,7 +64,7 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
     public boolean checkBlacklist(EntityType<?> entityType) {
-        return BLACKLIST.contains(entityType);
+        return isInverted() != BLACKLIST.contains(entityType);
     }
 
     @Override
