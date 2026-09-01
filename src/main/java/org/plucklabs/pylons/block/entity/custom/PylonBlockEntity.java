@@ -7,19 +7,32 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PylonBlockEntity extends BlockEntity {
-    private static int MAX_RANGE;
-
     private double RANGE;
 
+    private static List<PylonBlockEntity> LOADED_PYLONS = new ArrayList<>();
+
     private List<EntityType<?>> BLACKLIST;
+
+    private void _initialiseValuesForTestRun() {
+        this.setRange(100);
+        BLACKLIST = new ArrayList<>();
+        BLACKLIST.add(EntityType.ZOMBIE);
+        BLACKLIST.add(EntityType.SPIDER);
+        BLACKLIST.add(EntityType.SKELETON);
+        BLACKLIST.add(EntityType.SLIME);
+        BLACKLIST.add(EntityType.COW);
+    }
 
 
 
     public PylonBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.PYLON_BE.get(), pos, blockState);
+
+        _initialiseValuesForTestRun();
     }
 
     public void setRange(double range) {
@@ -47,7 +60,19 @@ public class PylonBlockEntity extends BlockEntity {
         return BLACKLIST.contains(entityType);
     }
 
-    public static int getMaxRange() {
-        return MAX_RANGE;
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        LOADED_PYLONS.add(this);
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        LOADED_PYLONS.remove(this);
+    }
+
+    public static List<PylonBlockEntity> getLoadedPylons() {
+        return LOADED_PYLONS;
     }
 }
