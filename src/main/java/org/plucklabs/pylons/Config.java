@@ -22,8 +22,6 @@ public class Config {
     private static final ModConfigSpec.IntValue PYLON_LEVEL_1_RANGE = BUILDER.defineInRange("level-1-pylon-range", 32,16,2560);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_2_RANGE = BUILDER.defineInRange("level-2-pylon-range", 64,32,2560);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_3_RANGE = BUILDER.defineInRange("level-3-pylon-range", 72,48,2560);
-    private static final ModConfigSpec.IntValue PYLON_LEVEL_4_RANGE = BUILDER.defineInRange("level-4-pylon-range", 128,64,2560);
-    private static final ModConfigSpec.IntValue PYLON_LEVEL_5_RANGE = BUILDER.defineInRange("level-5-pylon-range", 196,70,2560);
 
 
 
@@ -31,11 +29,17 @@ public class Config {
 
 
 
-    private static boolean validateItemName(final Object obj) {
-        return obj instanceof String itemName && BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(itemName));
-    }
+    public static int pylonRangeLevel1;
+    public static int pylonRangeLevel2;
+    public static int pylonRangeLevel3;
+
+
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+        pylonRangeLevel1 = PYLON_LEVEL_1_RANGE.get();
+        pylonRangeLevel2 = PYLON_LEVEL_2_RANGE.get();
+        pylonRangeLevel3 = PYLON_LEVEL_3_RANGE.get();
+
     }
 }
