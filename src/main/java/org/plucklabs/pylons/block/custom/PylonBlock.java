@@ -39,7 +39,7 @@ public class PylonBlock extends BaseEntityBlock {
         if(!level.isClientSide) {
             if (entity instanceof PylonBlockEntity pylon) {
                 pylon.checkStructure((ServerLevel) level);
-                player.sendSystemMessage(Component.literal("Level:" + pylon.getTier().getSerializedName()));
+                player.sendSystemMessage(Component.literal("Level:" + pylon.getTier().getSerializedName() + "\nRange: "+pylon.getTier().range));
             }
         }
 

@@ -65,7 +65,7 @@ public class PylonBlockEntity extends BlockEntity {
         double i = center.getX();
         double j = center.getY();
         double k = center.getZ();
-        AABB effectArea = (new AABB(i, j, k, i, j, k)).inflate(RANGE);
+        AABB effectArea = (new AABB(i, j, k, i, j, k)).inflate(tier.range);
         return effectArea;
     }
 
