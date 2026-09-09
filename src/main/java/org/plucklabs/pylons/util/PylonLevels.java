@@ -1,6 +1,7 @@
-package org.plucklabs.pylons;
+package org.plucklabs.pylons.util;
 
 import net.minecraft.util.StringRepresentable;
+import org.plucklabs.pylons.Config;
 
 public enum PylonLevels implements StringRepresentable {
     INACTIVE("inactive", 0),

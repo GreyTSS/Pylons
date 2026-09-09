@@ -9,14 +9,21 @@ import org.plucklabs.pylons.Pylons;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
 
 import java.util.List;
+import java.util.Set;
 
 @EventBusSubscriber(modid = Pylons.MODID)
 public class MobSpawnEventHandler {
+
+    /**
+     *
+     *
+     * @param event
+     */
     @SubscribeEvent
     public static void onSpawnPlacementCheck(MobSpawnEvent.SpawnPlacementCheck event) {
         BlockPos pos = event.getPos();
         EntityType<?> entityType = event.getEntityType();
-        List<PylonBlockEntity> loadedPylons = PylonBlockEntity.getLoadedPylons();
+        Set<PylonBlockEntity> loadedPylons = PylonBlockEntity.getLoadedPylons();
 
         boolean cancelSpawn = false;
         for (PylonBlockEntity pylon : loadedPylons) {
