@@ -22,7 +22,7 @@ public class PylonBlockEntity extends BlockEntity {
     private double RANGE;
     private boolean INVERTED;
 
-    private static Set<PylonBlockEntity> LOADED_PYLONS = new HashSet<>();
+    private static final Set<PylonBlockEntity> LOADED_PYLONS = new HashSet<>();
 
     private PylonLevels tier = PylonLevels.INACTIVE;
     private ArrayList<StructureTier> structure;
@@ -83,17 +83,7 @@ public class PylonBlockEntity extends BlockEntity {
         return isInRange;
     }
 
-    public void checkStructure(ServerLevel level) {
-        this.tier = PylonLevels.INACTIVE;
-        if (structure == null) return;
-        for(StructureTier structureTier : structure) {
-            if(structureTier.check(level)) {
-                this.tier = structureTier.tier;
-            } else {
-                return;
-            }
-        }
-    }
+
 
     public boolean checkBlacklist(EntityType<?> entityType) {
         return isInverted() != BLACKLIST.contains(entityType);
@@ -117,6 +107,29 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
 
+    /**
+     * Initiates nested structure checks, assigning the tier that corresponds with each check, on completion
+     * @param level This method is called from a method in the block class, only on server-side,
+     *              and thus passes it's serverlevel from there.
+     */
+    public void checkStructure(ServerLevel level) {
+        this.tier = PylonLevels.INACTIVE;
+        if (structure == null) return;
+        for(StructureTier structureTier : structure) {
+            if(structureTier.check(level)) {
+                this.tier = structureTier.tier;
+            } else {
+                return;
+            }
+        }
+    }
+
+    /**
+     * Cache Pillars uses the PillarHelpers pillar prefabs, along with some hardcoded relative coordinates,
+     * to create the pillar array desired in game. structure must be an ordered list, as each tier check exits early
+     * on failure. Pillars must be cached each time this block is loaded. It's not a huge calculation, so I don't
+     * think it's necessary to store them long-term.
+     */
     private void cachePillars() {
         structure = new ArrayList<>();
         BlockPos pos = this.getBlockPos();
@@ -127,6 +140,7 @@ public class PylonBlockEntity extends BlockEntity {
         var tier1Offset = 5;
         var tier2Offset = 6;
 
+        //Tier 1.
         Set<Pillar> tier1Pillars = new HashSet<>();
         tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x,y,z+tier1Offset)));
         tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x,y,z-tier1Offset)));
@@ -135,6 +149,7 @@ public class PylonBlockEntity extends BlockEntity {
 
         structure.add(new StructureTier(tier1Pillars, PylonLevels.LEVEL_1));
 
+        //Tier 2.
         Set<Pillar> tier2Pillars = new HashSet<>();
         tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x+tier2Offset,y,z+tier2Offset)));
         tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x-tier2Offset,y,z-tier2Offset)));
@@ -142,11 +157,20 @@ public class PylonBlockEntity extends BlockEntity {
         tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x+tier2Offset,y,z-tier2Offset)));
 
         structure.add(new StructureTier(tier2Pillars, PylonLevels.LEVEL_2));
-        System.out.println(structure);
+
+        //Tier 3.
+        Set<Pillar> tier3Pillars = new HashSet<>();
+        tier3Pillars.add(PillarHelpers.CreateTier3Pillar(pos));
+
+        structure.add(new StructureTier(tier3Pillars, PylonLevels.LEVEL_3));
     }
 
 
-
+    /**
+     * Holds a pillar in its entirety. Validates each block before returning its own total validity
+     * @param positions A set of BlockPos, stored as a division of areas the that the Pylon checks to
+     *                  determine it's level.
+     */
     public record Pillar(Set<BlockPos> positions){
         public boolean check(ServerLevel level) {
             boolean passed = true;
@@ -155,9 +179,6 @@ public class PylonBlockEntity extends BlockEntity {
                 passed = false;
                 break;
             }
-
-
-
             return passed;
         }
 
@@ -165,6 +186,12 @@ public class PylonBlockEntity extends BlockEntity {
 
 
     }
+
+    /**
+     * Contains a set of pillars that are checked in order to validate a tier, prescribing a level if completed.
+     * @param pillars A set of Pillars, to be checked for blocks
+     * @param tier A PylonLevels enum value to be assigned to the tier variable on valid.
+     */
     public record StructureTier(Set<Pillar> pillars, PylonLevels tier){
         public boolean check(ServerLevel level) {
             boolean passed = true;
