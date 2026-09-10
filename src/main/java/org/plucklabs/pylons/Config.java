@@ -17,7 +17,7 @@ public class Config {
     private static final ModConfigSpec.IntValue PYLON_LEVEL_1_RANGE = BUILDER.defineInRange("level-1-pylon-range", 64,16,2560);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_2_RANGE = BUILDER.defineInRange("level-2-pylon-range", 128,32,2560);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_3_RANGE = BUILDER.defineInRange("level-3-pylon-range", 192,48,2560);
-    private static final ModConfigSpec.IntValue PYLON_HOLOGRAM_FLASH_DURATION = BUILDER.defineInRange("hologram_flash_duration", 5, 1, 600);
+    private static final ModConfigSpec.IntValue PYLON_HOLOGRAM_FLASH_DURATION = BUILDER.defineInRange("hologram_flash_duration", 60, 1, 600);
 
 
     static final ModConfigSpec SPEC = BUILDER.build();

@@ -20,7 +20,9 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
+import org.plucklabs.pylons.Config;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
+import org.plucklabs.pylons.event.PylonHologramServerTickEvent;
 import org.plucklabs.pylons.networking.packet.HologramPositions;
 import org.plucklabs.pylons.util.PylonLevels;
 
@@ -44,7 +46,8 @@ public class PylonBlock extends BaseEntityBlock {
             if (entity instanceof PylonBlockEntity pylon) {
                 pylon.checkStructure((ServerLevel) level);
                 PacketDistributor.sendToPlayer((ServerPlayer) player,new HologramPositions((pylon.getTier()!=PylonLevels.LEVEL_3), pylon.getLowestInvalidTier()));
-                player.sendSystemMessage(Component.literal("Level:" + pylon.getTier().getSerializedName() + "\nRange: "+pylon.getTier().range));
+                PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
+                player.sendSystemMessage(Component.literal("Level:" + pylon.getTier().getSerializedName() + "\nRange: "+pylon.getTier().range+"\nIn Holo Range?: "+pylon.checkHologramRange(player)));
             }
         }
 

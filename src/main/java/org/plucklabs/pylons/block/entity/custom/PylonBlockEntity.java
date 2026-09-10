@@ -3,6 +3,7 @@ package org.plucklabs.pylons.block.entity.custom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -131,6 +132,7 @@ public class PylonBlockEntity extends BlockEntity {
      */
     private void cachePillars() {
         structure = new ArrayList<>();
+        tierMap.clear();
         BlockPos pos = this.getBlockPos();
         var x = pos.getX();
         var y = pos.getY();
@@ -199,9 +201,9 @@ public class PylonBlockEntity extends BlockEntity {
         return effectArea;
     }
 
-    public boolean checkHologramRange(BlockPos blockPos) {
+    public boolean checkHologramRange(Player player) {
         AABB effectArea = getHologramDetectionRange();
-        boolean isInRange = effectArea.contains(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        boolean isInRange = effectArea.contains(player.getX(), player.getY(), player.getZ());
         return isInRange;
     }
 
