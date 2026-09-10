@@ -16,6 +16,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.plucklabs.pylons.block.ModBlocks;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 import org.plucklabs.pylons.item.ModItems;
+import org.plucklabs.pylons.util.ModDataAttachments;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
@@ -50,7 +51,7 @@ public class Pylons {
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModCreativeModeTabs.register(modEventBus);
-
+        ModDataAttachments.register(modEventBus);
 
 
 

@@ -7,15 +7,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import org.plucklabs.pylons.Config;
+import org.plucklabs.pylons.util.ModTags;
 import org.plucklabs.pylons.util.PillarHelpers;
 import org.plucklabs.pylons.util.PylonLevels;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import java.util.*;
 
 
 public class PylonBlockEntity extends BlockEntity {
@@ -26,6 +24,7 @@ public class PylonBlockEntity extends BlockEntity {
 
     private PylonLevels tier = PylonLevels.INACTIVE;
     private ArrayList<StructureTier> structure;
+    private Map<PylonLevels,StructureTier> tierMap = new HashMap<>();
 
 
 
@@ -146,23 +145,64 @@ public class PylonBlockEntity extends BlockEntity {
         tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x,y,z-tier1Offset)));
         tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x+tier1Offset,y,z)));
         tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x-tier1Offset,y,z)));
+        StructureTier tier1Structure = new StructureTier(tier1Pillars, PylonLevels.LEVEL_1);
 
-        structure.add(new StructureTier(tier1Pillars, PylonLevels.LEVEL_1));
+        structure.add(tier1Structure);
+        tierMap.put(tier1Structure.tier, tier1Structure);
 
         //Tier 2.
         Set<Pillar> tier2Pillars = new HashSet<>();
-        tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x+tier2Offset,y,z+tier2Offset)));
-        tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x-tier2Offset,y,z-tier2Offset)));
-        tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x-tier2Offset,y,z+tier2Offset)));
-        tier2Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x+tier2Offset,y,z-tier2Offset)));
+        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x+tier2Offset,y,z+tier2Offset)));
+        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x-tier2Offset,y,z-tier2Offset)));
+        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x-tier2Offset,y,z+tier2Offset)));
+        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x+tier2Offset,y,z-tier2Offset)));
 
-        structure.add(new StructureTier(tier2Pillars, PylonLevels.LEVEL_2));
+        StructureTier tier2Structure = new StructureTier(tier2Pillars, PylonLevels.LEVEL_2);
+
+        structure.add(tier2Structure);
+        tierMap.put(tier2Structure.tier, tier2Structure);
 
         //Tier 3.
         Set<Pillar> tier3Pillars = new HashSet<>();
         tier3Pillars.add(PillarHelpers.CreateTier3Pillar(pos));
 
-        structure.add(new StructureTier(tier3Pillars, PylonLevels.LEVEL_3));
+        StructureTier tier3Structure = new StructureTier(tier3Pillars, PylonLevels.LEVEL_3);
+
+        structure.add(tier3Structure);
+        tierMap.put(tier3Structure.tier, tier3Structure);
+    }
+
+    public Set<BlockPos> getLowestInvalidTier() {
+        if(tier.ordinal() == PylonLevels.values().length - 1) {
+            System.out.println("Max Tier");
+            return new HashSet<>();
+
+        } else {
+            StructureTier nextTier = tierMap.get(PylonLevels.values()[tier.ordinal()+1]);
+            Set<BlockPos> positions = new HashSet<>();
+            for(Pillar pillar : nextTier.pillars) {
+                positions.addAll(pillar.positions);
+            }
+            System.out.println("Calculating");
+            return positions;
+
+        }
+    }
+
+
+    private AABB getHologramDetectionRange() {
+        BlockPos pos = this.getBlockPos();
+        double i = pos.getX();
+        double j = pos.getY();
+        double k = pos.getZ();
+        AABB effectArea = (new AABB(i, j, k, i, j, k)).inflate(Config.pylonHologramDetectionRange);
+        return effectArea;
+    }
+
+    public boolean checkHologramRange(BlockPos blockPos) {
+        AABB effectArea = getHologramDetectionRange();
+        boolean isInRange = effectArea.contains(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        return isInRange;
     }
 
 
@@ -175,7 +215,7 @@ public class PylonBlockEntity extends BlockEntity {
         public boolean check(ServerLevel level) {
             boolean passed = true;
             for(BlockPos pos : positions) {
-                if(level.getBlockState(pos).getBlock() == Blocks.IRON_BLOCK) continue;
+                if(level.getBlockState(pos).is(ModTags.Blocks.PILLAR_MATERIAL)) continue;
                 passed = false;
                 break;
             }

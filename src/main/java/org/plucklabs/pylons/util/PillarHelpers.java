@@ -65,7 +65,7 @@ public class PillarHelpers {
                         new BlockPos(origin.getX(), origin.getY()+1, origin.getZ())
                 )
         );
-        pillar.add(new BlockPos(origin.getX(), origin.getY()+1, origin.getZ()));
+        pillar.add(new BlockPos(origin.getX(), origin.getY()+2, origin.getZ()));
         return new PylonBlockEntity.Pillar(pillar);
     }
 
