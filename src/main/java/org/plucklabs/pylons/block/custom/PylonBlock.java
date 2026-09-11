@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -31,14 +32,34 @@ import org.plucklabs.pylons.util.PylonLevels;
 
 
 public class PylonBlock extends BaseEntityBlock {
+
+    public static final EnumProperty<PylonLevels> TIER = EnumProperty.create("tier", PylonLevels.class);
+
     public static final MapCodec<PylonBlock> CODEC = simpleCodec(PylonBlock::new);
 
 
 
     public PylonBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(getStateDefinition().any()
+            .setValue(TIER, PylonLevels.INACTIVE)
+        );
+
+    }
 
 
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(TIER);
+    }
+
+
+
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if(!level.isClientSide()) level.scheduleTick(pos, this, Config.pylonStructureCheckFrequency);
     }
 
     //Temp State Check
@@ -68,6 +89,19 @@ public class PylonBlock extends BaseEntityBlock {
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         super.tick(state, level, pos, random);
+        BlockEntity entity = level.getBlockEntity(pos);
+        if(!(entity instanceof PylonBlockEntity pylon)) {
+            System.out.println("return");
+            return;
+        }
+
+        System.out.println("Check");
+        pylon.checkStructure(level);
+        level.setBlock(pos, level.getBlockState(pos).setValue(TIER, pylon.getTier()), UPDATE_CLIENTS);
+        level.scheduleTick(pos, this, Config.pylonStructureCheckFrequency);
+
+
+
     }
 
     @Override

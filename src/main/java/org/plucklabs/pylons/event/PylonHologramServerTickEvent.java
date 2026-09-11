@@ -108,6 +108,7 @@ public class PylonHologramServerTickEvent {
             for(PylonBlockEntity pylon : PylonBlockEntity.getLoadedPylons()) {
                 if(pylon.checkHologramRange(player)) {
                     data.put(player.getUUID(), new HologramPositions(true, pylon.getLowestInvalidTier(),blockItem.getBlock().defaultBlockState()));
+                    timer.remove(player.getUUID());
                     break;
                 } else {
                     data.put(player.getUUID(), new HologramPositions(false, new HashSet<>(), Blocks.IRON_BLOCK.defaultBlockState()));

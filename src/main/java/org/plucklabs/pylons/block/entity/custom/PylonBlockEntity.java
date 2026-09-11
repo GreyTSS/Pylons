@@ -107,6 +107,8 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
 
+
+
     /**
      * Initiates nested structure checks, assigning the tier that corresponds with each check, on completion
      * @param level This method is called from a method in the block class, only on server-side,
@@ -176,7 +178,6 @@ public class PylonBlockEntity extends BlockEntity {
 
     public Set<BlockPos> getLowestInvalidTier() {
         if(tier.ordinal() == PylonLevels.values().length - 1) {
-            System.out.println("Max Tier");
             return new HashSet<>();
 
         } else {
@@ -185,7 +186,6 @@ public class PylonBlockEntity extends BlockEntity {
             for(Pillar pillar : nextTier.pillars) {
                 positions.addAll(pillar.positions);
             }
-            System.out.println("Calculating");
             return positions;
 
         }
