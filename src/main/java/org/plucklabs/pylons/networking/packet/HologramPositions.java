@@ -6,12 +6,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.plucklabs.pylons.Pylons;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public record HologramPositions(boolean draw, Set<BlockPos> positions) implements CustomPacketPayload {
+public record HologramPositions(boolean draw, Set<BlockPos> positions, BlockState blockState) implements CustomPacketPayload {
     public static final Type<HologramPositions> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Pylons.MODID, "hologram_positions"));
 
 
@@ -26,6 +28,8 @@ public record HologramPositions(boolean draw, Set<BlockPos> positions) implement
                 60
             ),
             HologramPositions::positions,
+            ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY),
+            HologramPositions::blockState,
             HologramPositions::new
     );
     @Override

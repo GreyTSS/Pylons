@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,8 +45,9 @@ public class PylonBlock extends BaseEntityBlock {
         BlockEntity entity = level.getBlockEntity(pos);
         if(!level.isClientSide) {
             if (entity instanceof PylonBlockEntity pylon) {
+                var packet = new HologramPositions((pylon.getTier()!=PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), Blocks.IRON_BLOCK.defaultBlockState());
                 pylon.checkStructure((ServerLevel) level);
-                PacketDistributor.sendToPlayer((ServerPlayer) player,new HologramPositions((pylon.getTier()!=PylonLevels.LEVEL_3), pylon.getLowestInvalidTier()));
+                PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
                 PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
                 player.sendSystemMessage(Component.literal("Level:" + pylon.getTier().getSerializedName() + "\nRange: "+pylon.getTier().range+"\nIn Holo Range?: "+pylon.checkHologramRange(player)));
             }

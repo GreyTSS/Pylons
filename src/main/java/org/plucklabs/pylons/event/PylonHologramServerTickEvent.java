@@ -1,7 +1,9 @@
 package org.plucklabs.pylons.event;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -26,25 +28,36 @@ public class PylonHologramServerTickEvent {
 
     @SubscribeEvent
     public static void tick(ServerTickEvent.Pre event) {
+        if(timer.isEmpty()) return;
 
-        Map<UUID, Integer> newTimer = new HashMap<>();
+        timer.entrySet().removeIf((entry) -> {
+            int newValue = entry.getValue()-1;
+            entry.setValue(newValue);
+            System.out.println(newValue);
+            if(newValue <= 0) {
+                UUID key = entry.getKey();
+                if(event.getServer().getPlayerList().getPlayer(key) instanceof ServerPlayer player) {
+                    PacketDistributor.sendToPlayer(player, new HologramPositions(false, new HashSet<>(), Blocks.IRON_BLOCK.defaultBlockState()));
+                }
+                return true;
+            }
+            return false;
+        });
+
+        /* Not threadsafe https://stackoverflow.com/a/29187813
+        timer.replaceAll((uuid, integer) -> integer - 1);
+        HashSet<UUID> removedKeys = new HashSet<>();
         for(UUID key : timer.keySet()) {
-            if(!(event.getServer().getPlayerList().getPlayer(key) instanceof ServerPlayer player)) continue;
-            System.out.println(player.getName().getString() + ": "+timer.get(key));
-
-            newTimer.put(key, (timer.get(key) - 1));
-            if(timer.get(key) <= 0) {
-                HologramPositions position = new HologramPositions(false, new HashSet<>());
-                PacketDistributor.sendToPlayer(player, position);
-                newTimer.remove(key);
-
-                cache.remove(key);
-
+            if(timer.get(key).intValue() <= 0 ) {
+                removedKeys.add(key);
+                if(event.getServer().getPlayerList().getPlayer(key) instanceof ServerPlayer player) {
+                    PacketDistributor.sendToPlayer(player, new HologramPositions(false, new HashSet<>()));
+                }
             }
         }
+        timer.keySet().removeAll(removedKeys);
 
-        timer.clear();
-        timer.putAll(newTimer);
+         */
 
     }
 
@@ -70,11 +83,12 @@ public class PylonHologramServerTickEvent {
             PacketDistributor.sendToPlayer(player, data.get(uuid));
         }
 
-        for(UUID uuid : data.keySet()) {
+        for(UUID uuid : deltaRemoved.keySet()) {
             timer.put(uuid,Config.pylonHologramFlashDuration);
         }
 
-
+        cache.clear();
+        cache.putAll(data);
 
     }
 
@@ -100,10 +114,15 @@ public class PylonHologramServerTickEvent {
         if(player.getMainHandItem().getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
             for(PylonBlockEntity pylon : PylonBlockEntity.getLoadedPylons()) {
                 if(pylon.checkHologramRange(player)) {
-                    data.put(player.getUUID(), new HologramPositions(true, pylon.getLowestInvalidTier()));
+                    player.sendSystemMessage(Component.literal("Yep. Thats it."));
+                    data.put(player.getUUID(), new HologramPositions(true, pylon.getLowestInvalidTier(),blockItem.getBlock().defaultBlockState()));
                     break;
+                } else {
+
                 }
             }
+        } else {
+            data.put(player.getUUID(), new HologramPositions(false, new HashSet<>(), Blocks.IRON_BLOCK.defaultBlockState()));
         }
 
 
