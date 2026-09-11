@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.plucklabs.pylons.Pylons;
-import org.plucklabs.pylons.networking.ServerPayloadHandler;
+import org.plucklabs.pylons.networking.client.ClientPayloadHandler;
 import org.plucklabs.pylons.networking.packet.HologramPositions;
 
 @EventBusSubscriber(modid = Pylons.MODID)
@@ -16,6 +16,6 @@ public class RegisterPayloadsEvent {
         final PayloadRegistrar registrar = event.registrar("1")
                 .executesOn(HandlerThread.MAIN);
 
-        registrar.playToClient(HologramPositions.TYPE, HologramPositions.STREAM_CODEC, ServerPayloadHandler::handleDataOnMain);
+        registrar.playToClient(HologramPositions.TYPE, HologramPositions.STREAM_CODEC, ClientPayloadHandler::handleDataOnMain);
     }
 }
