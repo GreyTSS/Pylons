@@ -33,7 +33,6 @@ public class PylonHologramServerTickEvent {
         timer.entrySet().removeIf((entry) -> {
             int newValue = entry.getValue()-1;
             entry.setValue(newValue);
-            System.out.println(newValue);
             if(newValue <= 0) {
                 UUID key = entry.getKey();
                 if(event.getServer().getPlayerList().getPlayer(key) instanceof ServerPlayer player) {
@@ -43,22 +42,6 @@ public class PylonHologramServerTickEvent {
             }
             return false;
         });
-
-        /* Not threadsafe https://stackoverflow.com/a/29187813
-        timer.replaceAll((uuid, integer) -> integer - 1);
-        HashSet<UUID> removedKeys = new HashSet<>();
-        for(UUID key : timer.keySet()) {
-            if(timer.get(key).intValue() <= 0 ) {
-                removedKeys.add(key);
-                if(event.getServer().getPlayerList().getPlayer(key) instanceof ServerPlayer player) {
-                    PacketDistributor.sendToPlayer(player, new HologramPositions(false, new HashSet<>()));
-                }
-            }
-        }
-        timer.keySet().removeAll(removedKeys);
-
-         */
-
     }
 
     @SubscribeEvent
@@ -71,12 +54,22 @@ public class PylonHologramServerTickEvent {
 
 
 
-        deltaAdded.putAll(data);
-        deltaAdded.keySet().removeAll(cache.keySet());
+        data.forEach((uuid, currentPacket) ->{
+           HologramPositions cachedPacket = cache.get(uuid);
 
+           if(!currentPacket.equals(cachedPacket)) {
+               deltaAdded.put(uuid, currentPacket);
+           }
+        });
 
-        deltaRemoved.putAll(cache);
-        deltaRemoved.keySet().removeAll(data.keySet());
+        cache.forEach((uuid, currentPacket) ->{
+            HologramPositions cachedPacket = data.get(uuid);
+
+            if(!currentPacket.equals(cachedPacket)) {
+                deltaAdded.put(uuid, currentPacket);
+            }
+        });
+
 
         for(UUID uuid : deltaAdded.keySet()) {
             if(!(event.getServer().getPlayerList().getPlayer(uuid) instanceof  ServerPlayer player)) continue;
@@ -114,11 +107,10 @@ public class PylonHologramServerTickEvent {
         if(player.getMainHandItem().getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
             for(PylonBlockEntity pylon : PylonBlockEntity.getLoadedPylons()) {
                 if(pylon.checkHologramRange(player)) {
-                    player.sendSystemMessage(Component.literal("Yep. Thats it."));
                     data.put(player.getUUID(), new HologramPositions(true, pylon.getLowestInvalidTier(),blockItem.getBlock().defaultBlockState()));
                     break;
                 } else {
-
+                    data.put(player.getUUID(), new HologramPositions(false, new HashSet<>(), Blocks.IRON_BLOCK.defaultBlockState()));
                 }
             }
         } else {

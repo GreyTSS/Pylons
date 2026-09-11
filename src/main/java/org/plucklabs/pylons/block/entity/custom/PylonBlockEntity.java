@@ -97,8 +97,8 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void onChunkUnloaded() {
-        super.onChunkUnloaded();
+    public void setRemoved() {
+        super.setRemoved();
         LOADED_PYLONS.remove(this);
     }
 

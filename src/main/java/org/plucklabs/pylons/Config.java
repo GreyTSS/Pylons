@@ -13,7 +13,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    private static final ModConfigSpec.IntValue PYLON_HOLOGRAM_DETECTION_RANGE = BUILDER.defineInRange("pylon-hologram-detection-range", 8,2,10);
+    private static final ModConfigSpec.IntValue PYLON_HOLOGRAM_DETECTION_RANGE = BUILDER.defineInRange("pylon-hologram-detection-range", 8,2,24);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_1_RANGE = BUILDER.defineInRange("level-1-pylon-range", 64,16,2560);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_2_RANGE = BUILDER.defineInRange("level-2-pylon-range", 128,32,2560);
     private static final ModConfigSpec.IntValue PYLON_LEVEL_3_RANGE = BUILDER.defineInRange("level-3-pylon-range", 192,48,2560);

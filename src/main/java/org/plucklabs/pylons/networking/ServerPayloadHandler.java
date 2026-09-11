@@ -42,10 +42,10 @@ public class ServerPayloadHandler {
             var level = context.player().level();
             if(!(level instanceof ClientLevel clientLevel)) return;
 
-            BlockState targetState = Blocks.IRON_BLOCK.defaultBlockState();
+
 
             //Matrix Transformation for Z-Fighting
-            float scaleFactor = 0.98f;
+            float scaleFactor = 0.24f;
             float offset = (1.0f - scaleFactor) / 2.0f;
 
             Transformation transformation = new Transformation(
@@ -55,10 +55,19 @@ public class ServerPayloadHandler {
                     null
             );
 
+
+
             //Tag for Brightness
             CompoundTag brightness = new CompoundTag();
                 brightness.putInt("block", 15);
                 brightness.putInt("sky", 15);
+
+            //Create NBT Data to attach
+            CompoundTag nbt = new CompoundTag();
+            nbt.putBoolean("glowing", true);
+            nbt.putInt("glow_color_override", 0xFFFF0000);
+            nbt.put("brightness", brightness);
+            nbt.put("block_state", NbtUtils.writeBlockState(hologramPositions.blockState()));
 
 
 
@@ -66,30 +75,28 @@ public class ServerPayloadHandler {
                 //Create a block display
                 Display.BlockDisplay display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, level);
 
-                //Create NBT Data to attach
-                CompoundTag nbt = new CompoundTag();
-                nbt.put("block_state", NbtUtils.writeBlockState(targetState));
 
-                //Glow Red
-                nbt.putBoolean("glowing", true);
-                nbt.putInt("glow_color_override", 0xFFFF0000);
-                nbt.put("brightness", brightness);
+
+
 
                 //Add matrix to NBT
                 Transformation.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, transformation)
                         .result()
                         .ifPresent(tag -> nbt.put("transformation", tag));
 
+
+
                 //Configure Display
                 display.load(nbt);
-                display.setGlowingTag(true);
-                //display.set
+
+
                 display.setPos(pos.getX(), pos.getY(), pos.getZ());
                 System.out.println("Added: ["+pos.getX()+", "+pos.getY()+ ", "+pos.getZ()+"]");
 
                 //Display it
                 clientLevel.addEntity(display);
                 ACTIVE_BLOCK_DISPLAYS.computeIfAbsent(context.player().getUUID(), k -> new HashSet<>()).add(display);
+
             }
         };
 

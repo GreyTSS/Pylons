@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -25,6 +26,7 @@ import org.plucklabs.pylons.Config;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
 import org.plucklabs.pylons.event.PylonHologramServerTickEvent;
 import org.plucklabs.pylons.networking.packet.HologramPositions;
+import org.plucklabs.pylons.util.ModTags;
 import org.plucklabs.pylons.util.PylonLevels;
 
 
@@ -45,7 +47,11 @@ public class PylonBlock extends BaseEntityBlock {
         BlockEntity entity = level.getBlockEntity(pos);
         if(!level.isClientSide) {
             if (entity instanceof PylonBlockEntity pylon) {
-                var packet = new HologramPositions((pylon.getTier()!=PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), Blocks.IRON_BLOCK.defaultBlockState());
+                BlockState blockState = Blocks.IRON_BLOCK.defaultBlockState();
+                if(player.getItemInHand(player.getUsedItemHand()).getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
+                    blockState = blockItem.getBlock().defaultBlockState();
+                }
+                var packet = new HologramPositions((pylon.getTier()!=PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), blockState);
                 pylon.checkStructure((ServerLevel) level);
                 PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
                 PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
