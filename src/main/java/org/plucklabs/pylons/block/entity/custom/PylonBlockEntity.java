@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.plucklabs.pylons.Config;
+import org.plucklabs.pylons.event.PylonHologramServerTickEvent;
 import org.plucklabs.pylons.util.ModTags;
 import org.plucklabs.pylons.util.PillarHelpers;
 import org.plucklabs.pylons.util.PylonLevels;
@@ -115,12 +116,18 @@ public class PylonBlockEntity extends BlockEntity {
      *              and thus passes it's serverlevel from there.
      */
     public void checkStructure(ServerLevel level) {
+        PylonLevels oldTier = this.tier;
+
         this.tier = PylonLevels.INACTIVE;
         if (structure == null) return;
         for(StructureTier structureTier : structure) {
             if(structureTier.check(level)) {
                 this.tier = structureTier.tier;
             } else {
+                if(this.tier != oldTier) {
+                    //This resets packets when the tier changes, so if a player is still holding a block they get the updated pillar positions :p
+
+                }
                 return;
             }
         }
@@ -132,7 +139,7 @@ public class PylonBlockEntity extends BlockEntity {
      * on failure. Pillars must be cached each time this block is loaded. It's not a huge calculation, so I don't
      * think it's necessary to store them long-term.
      */
-    private void cachePillars() {
+    public void cachePillars() {
         structure = new ArrayList<>();
         tierMap.clear();
         BlockPos pos = this.getBlockPos();
@@ -182,6 +189,7 @@ public class PylonBlockEntity extends BlockEntity {
 
         } else {
             StructureTier nextTier = tierMap.get(PylonLevels.values()[tier.ordinal()+1]);
+            if(nextTier == null) return new HashSet<>();
             Set<BlockPos> positions = new HashSet<>();
             for(Pillar pillar : nextTier.pillars) {
                 positions.addAll(pillar.positions);

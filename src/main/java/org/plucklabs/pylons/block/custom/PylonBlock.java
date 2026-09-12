@@ -1,15 +1,19 @@
 package org.plucklabs.pylons.block.custom;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -60,7 +64,11 @@ public class PylonBlock extends BaseEntityBlock {
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if(!level.isClientSide()) level.scheduleTick(pos, this, Config.pylonStructureCheckFrequency);
+
     }
+
+
+
 
     //Temp State Check
     @Override
@@ -76,7 +84,7 @@ public class PylonBlock extends BaseEntityBlock {
                 pylon.checkStructure((ServerLevel) level);
                 PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
                 PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
-                player.sendSystemMessage(Component.literal("Level:" + pylon.getTier().getSerializedName() + "\nRange: "+pylon.getTier().range+"\nIn Holo Range?: "+pylon.checkHologramRange(player)));
+
             }
         }
 
@@ -85,6 +93,41 @@ public class PylonBlock extends BaseEntityBlock {
     }
 
 
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+
+        BlockState blockState = level.getBlockState(pos);
+        if(level instanceof ClientLevel cLevel && blockState.hasProperty(TIER)) {
+            PylonLevels tier = blockState.getValue(TIER);
+            if(tier == PylonLevels.INACTIVE) return;
+            if(tier.ordinal() > PylonLevels.INACTIVE.ordinal()) {
+                particleCircle(pos,5d,10d,cLevel,random);
+            }
+            if(tier.ordinal() > PylonLevels.LEVEL_1.ordinal()) {
+                particleCircle(pos,8d,20d,cLevel,random);
+            }
+            if(tier.ordinal() > PylonLevels.LEVEL_2.ordinal()) {
+                particleCircle(pos,2d,5d,cLevel,random);
+            }
+        }
+
+
+    }
+
+
+    private static void particleCircle(BlockPos origin, double radius, double divisions, ClientLevel level, RandomSource random) {
+        for(double i = 0; i < divisions; i++) {
+            double angle = (2 * Math.PI) * (i / divisions);
+            double x = origin.getX() + radius * Math.cos(angle);
+            double z = origin.getZ() + radius * Math.sin(angle);
+
+            double y = origin.getY() + 1.5;
+
+            level.addParticle(ParticleTypes.SOUL, x+(random.nextDouble()),y+(random.nextDouble()*.3),z+(random.nextDouble()), random.nextDouble()*.015, random.nextDouble()*.015, random.nextDouble()*.015);
+
+        }
+    }
 
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
