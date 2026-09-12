@@ -1,6 +1,8 @@
 package org.plucklabs.pylons.block.entity.custom;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -118,6 +120,7 @@ public class PylonBlockEntity extends BlockEntity {
     public void checkStructure(ServerLevel level) {
         PylonLevels oldTier = this.tier;
 
+
         this.tier = PylonLevels.INACTIVE;
         if (structure == null) return;
         for(StructureTier structureTier : structure) {
@@ -126,7 +129,7 @@ public class PylonBlockEntity extends BlockEntity {
             } else {
                 if(this.tier != oldTier) {
                     //This resets packets when the tier changes, so if a player is still holding a block they get the updated pillar positions :p
-
+                    PylonHologramServerTickEvent.cache.clear();
                 }
                 return;
             }
@@ -254,4 +257,18 @@ public class PylonBlockEntity extends BlockEntity {
         }
     }
 
+
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putString("tier", tier.getSerializedName());
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        tier = PylonLevels.valueOf(tag.getString("tier"));
+
+    }
 }

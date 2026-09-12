@@ -14,6 +14,7 @@ import org.plucklabs.pylons.Pylons;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
 import org.plucklabs.pylons.networking.packet.HologramPositions;
 import org.plucklabs.pylons.util.ModTags;
+import org.plucklabs.pylons.util.PylonLevels;
 
 import java.util.*;
 
@@ -66,7 +67,7 @@ public class PylonHologramServerTickEvent {
             HologramPositions cachedPacket = data.get(uuid);
 
             if(!currentPacket.equals(cachedPacket)) {
-                deltaAdded.put(uuid, currentPacket);
+                deltaRemoved.put(uuid, currentPacket);
             }
         });
 
@@ -107,7 +108,8 @@ public class PylonHologramServerTickEvent {
         if(player.getMainHandItem().getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
             for(PylonBlockEntity pylon : PylonBlockEntity.getLoadedPylons()) {
                 if(pylon.checkHologramRange(player)) {
-                    data.put(player.getUUID(), new HologramPositions(true, pylon.getLowestInvalidTier(),blockItem.getBlock().defaultBlockState()));
+                    var tier = pylon.getTier();
+                    data.put(player.getUUID(), new HologramPositions((pylon.getTier()!= PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(),blockItem.getBlock().defaultBlockState()));
                     timer.remove(player.getUUID());
                     break;
                 } else {
