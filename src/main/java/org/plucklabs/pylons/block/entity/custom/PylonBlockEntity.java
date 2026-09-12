@@ -9,7 +9,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.plucklabs.pylons.Config;
 import org.plucklabs.pylons.event.PylonHologramServerTickEvent;
 import org.plucklabs.pylons.util.ModTags;
@@ -35,11 +37,11 @@ public class PylonBlockEntity extends BlockEntity {
 
 
 
-    private List<EntityType<?>> BLACKLIST;
+    private Set<EntityType<?>> BLACKLIST;
 
     private void _initialiseValuesForTestRun() {
         this.setRange(100);
-        BLACKLIST = new ArrayList<>();
+        BLACKLIST = new HashSet<>();
         BLACKLIST.add(EntityType.ZOMBIE);
         BLACKLIST.add(EntityType.SPIDER);
         BLACKLIST.add(EntityType.SKELETON);
@@ -56,20 +58,16 @@ public class PylonBlockEntity extends BlockEntity {
     public PylonBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.PYLON_BE.get(), pos, blockState);
 
-        _initialiseValuesForTestRun();
+
     }
 
     public void setRange(double range) {
         this.RANGE = range;
     }
 
-    public AABB getRange() {
-        BlockPos center = this.getBlockPos();
-        double i = center.getX();
-        double j = center.getY();
-        double k = center.getZ();
-        AABB effectArea = (new AABB(i, j, k, i, j, k)).inflate(tier.range);
-        return effectArea;
+    public AABB getRange(BlockPos origin) {;
+        double range = this.tier.range();
+        return new AABB(origin).inflate(range);
     }
 
     public void setInverted(boolean inverted) {
@@ -80,12 +78,23 @@ public class PylonBlockEntity extends BlockEntity {
         return INVERTED;
     }
 
+    /*
+     * Turned this into a sub method so that it can retain simplicity while allowing for range to be determined from a different origin
+     * (for the sake of Sable compatibility)
+     */
     public boolean checkRange(BlockPos pos) {
-        AABB effectArea = getRange();
-        boolean isInRange = effectArea.contains(pos.getX(), pos.getY(), pos.getZ());
-        return isInRange;
+        return checkRangeFrom(pos, this.getBlockPos());
     }
 
+    /*
+     * Essentially the same as the old checkRange function, grabbing the bounding box relative to the supplied origin.
+     * Make note of the .getX/Y/Z() functions returning ints. Turned the full position into a bounding box with the hopes it
+     * would negate spawns that are partially inside the range but the origin point may not be.
+     */
+    public boolean checkRangeFrom(BlockPos pos, BlockPos origin) {
+        AABB effectArea = getRange(origin);
+        return effectArea.intersects(new AABB(pos));
+    }
 
 
     public boolean checkBlacklist(EntityType<?> entityType) {
@@ -97,6 +106,7 @@ public class PylonBlockEntity extends BlockEntity {
         super.onLoad();
         cachePillars();
         LOADED_PYLONS.add(this);
+        _initialiseValuesForTestRun();
     }
 
     @Override
@@ -119,19 +129,20 @@ public class PylonBlockEntity extends BlockEntity {
      */
     public void checkStructure(ServerLevel level) {
         PylonLevels oldTier = this.tier;
-
-
         this.tier = PylonLevels.INACTIVE;
-        if (structure == null) return;
-        for(StructureTier structureTier : structure) {
-            if(structureTier.check(level)) {
-                this.tier = structureTier.tier;
-            } else {
-                if(this.tier != oldTier) {
-                    //This resets packets when the tier changes, so if a player is still holding a block they get the updated pillar positions :p
-                    PylonHologramServerTickEvent.cache.clear();
+        var blockState = level.getBlockState(getBlockPos());
+        if(!blockState.hasProperty(BlockStateProperties.POWERED) || !blockState.getValue(BlockStateProperties.POWERED)) {
+            if (structure == null) return;
+            for (StructureTier structureTier : structure) {
+                if (structureTier.check(level)) {
+                    this.tier = structureTier.tier;
+                } else {
+                    if (this.tier != oldTier) {
+                        //This resets packets when the tier changes, so if a player is still holding a block they get the updated pillar positions :p
+                        PylonHologramServerTickEvent.cache.clear();
+                    }
+                    return;
                 }
-                return;
             }
         }
     }
@@ -218,6 +229,10 @@ public class PylonBlockEntity extends BlockEntity {
         return isInRange;
     }
 
+    public Set getBlackList() {
+        return Set.copyOf(BLACKLIST);
+    }
+
 
     /**
      * Holds a pillar in its entirety. Validates each block before returning its own total validity
@@ -255,20 +270,5 @@ public class PylonBlockEntity extends BlockEntity {
             }
             return passed;
         }
-    }
-
-
-
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putString("tier", tier.getSerializedName());
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        tier = PylonLevels.valueOf(tag.getString("tier"));
-
     }
 }

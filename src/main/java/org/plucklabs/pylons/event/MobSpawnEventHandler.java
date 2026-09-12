@@ -27,9 +27,17 @@ public class MobSpawnEventHandler {
 
         boolean cancelSpawn = false;
         for (PylonBlockEntity pylon : loadedPylons) {
-            if (pylon.checkRange(pos) && pylon.checkBlacklist(entityType)) {
-                cancelSpawn = true;
-                break;
+            //System.out.println(pylon.getRange(pylon.getBlockPos()));
+            //System.out.println("Pylon Tier: "+pylon.getTier().name()+"\nBlacklist: "+ pylon.getBlackList() + "\nTarget: "+event.getEntityType());
+            if (pylon.checkRange(pos)) {
+                if (pylon.checkBlacklist(entityType)) {
+                    cancelSpawn = true;
+                    System.out.println("Suppressed!");
+                    break;
+                } else {
+                    System.out.println("In range but unlisted");
+                }
+
             }
         }
 
