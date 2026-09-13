@@ -12,14 +12,20 @@ public enum PylonLevels implements StringRepresentable {
     LEVEL_2("two",   () -> Config.pylonRangeLevel2),
     LEVEL_3("three", () -> Config.pylonRangeLevel3);
 
-    public final Supplier<Integer> range;
+    public final Supplier<Integer> rangeSupplier;
+    public int range = -1;
     public final String levelName;
-    PylonLevels(String name, Supplier<Integer> range) {
+    PylonLevels(String name, Supplier<Integer> rangeSupplier) {
         this.levelName = name;
-        this.range = range;}
+        this.rangeSupplier = rangeSupplier;}
 
 
-    public int range() {return this.range.get();}
+    public int range() {
+        if(this.range == -1) {
+            this.range = rangeSupplier.get();
+        }
+        return this.range;
+    }
 
     @Override
     public String getSerializedName() {

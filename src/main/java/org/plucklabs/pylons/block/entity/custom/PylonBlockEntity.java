@@ -1,5 +1,6 @@
 package org.plucklabs.pylons.block.entity.custom;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -31,7 +32,6 @@ public class PylonBlockEntity extends BlockEntity {
     private PylonLevels tier = PylonLevels.INACTIVE;
     private ArrayList<StructureTier> structure;
     private Map<PylonLevels,StructureTier> tierMap = new HashMap<>();
-
 
 
 
@@ -69,6 +69,7 @@ public class PylonBlockEntity extends BlockEntity {
         double range = this.tier.range();
         return new AABB(origin).inflate(range);
     }
+
 
     public void setInverted(boolean inverted) {
         this.INVERTED = inverted;
