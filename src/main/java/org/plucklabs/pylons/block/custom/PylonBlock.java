@@ -66,8 +66,6 @@ public class PylonBlock extends BaseEntityBlock {
 
 
 
-
-
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {return CODEC;}
 

@@ -2,6 +2,7 @@ package org.plucklabs.pylons.event;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
@@ -14,6 +15,10 @@ import java.util.List;
 public class MobSpawnEventHandler {
     @SubscribeEvent
     public static void onSpawnPlacementCheck(MobSpawnEvent.SpawnPlacementCheck event) {
+        if (event.getSpawnType() == MobSpawnType.SPAWNER) {
+            return;
+        }
+
         BlockPos pos = event.getPos();
         EntityType<?> entityType = event.getEntityType();
         List<PylonBlockEntity> loadedPylons = PylonBlockEntity.getLoadedPylons();
