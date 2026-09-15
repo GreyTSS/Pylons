@@ -1,5 +1,15 @@
 {
   "creativetab.pylons.pylon_tab": "Pylons",
   "block.pylons.pylon": "Pylon",
-  "item.pylons.pylon": "Pylon"
+  "item.pylons.pylon": "Pylon",
+  "string.pylons.selectMob": "Select Affected Mobs",
+  "string.pylons.sortByAZ": "A-Z",
+  "string.pylons.sortByZA": "Z-A",
+  "string.pylons.includeSelectedON": "Include selected",
+  "string.pylons.includeSelectedOFF": "Don't include selected",
+  "string.pylons.confirm": "Confirm",
+  "string.pylons.cancel": "Cancel",
+  "string.pylons.search": "Search",
+  "string.pylons.menu": "Pylon",
+  "string.pylons.showOnMap": "Show range on map"
 }

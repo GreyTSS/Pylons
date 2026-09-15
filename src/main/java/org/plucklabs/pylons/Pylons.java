@@ -10,17 +10,20 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.plucklabs.pylons.block.ModBlocks;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 import org.plucklabs.pylons.item.ModItems;
+import org.plucklabs.pylons.screen.ModMenuTypes;
+import org.plucklabs.pylons.screen.custom.PylonScreen;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Pylons.MODID)
-public class Pylons {
+public class  Pylons {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "pylons";
     // Directly reference a slf4j logger
@@ -50,6 +53,7 @@ public class Pylons {
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModCreativeModeTabs.register(modEventBus);
+        ModMenuTypes.register(modEventBus);
 
 
 
@@ -74,6 +78,11 @@ public class Pylons {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
+        }
+
+        @SubscribeEvent
+        public static void registerScreens(RegisterMenuScreensEvent event) {
+             event.register(ModMenuTypes.PYLON_MENU.get(), PylonScreen::new);
         }
     }
 }

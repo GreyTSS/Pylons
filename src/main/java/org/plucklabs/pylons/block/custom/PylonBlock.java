@@ -19,6 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.plucklabs.pylons.PylonLevels;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
+import org.plucklabs.pylons.screen.custom.PylonGUI;
 
 
 public class PylonBlock extends BaseEntityBlock {
@@ -44,7 +45,10 @@ public class PylonBlock extends BaseEntityBlock {
     //Temp State Check
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        player.sendSystemMessage(Component.literal("LeveL:" + state.getValue(LEVEL).getSerializedName()));
+        // player.sendSystemMessage(Component.literal("LeveL:" + state.getValue(LEVEL).getSerializedName()));
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof PylonBlockEntity blockEntity) {
+            PylonGUI.openMenu(player, blockEntity);
+        }
         return InteractionResult.SUCCESS;
     }
 

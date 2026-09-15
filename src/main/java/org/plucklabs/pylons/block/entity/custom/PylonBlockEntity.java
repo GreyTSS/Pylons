@@ -63,6 +63,10 @@ public class PylonBlockEntity extends BlockEntity {
         return isInRange;
     }
 
+    public void blacklistMob(EntityType<?> entityType) {
+        if (!BLACKLIST.contains(entityType)) BLACKLIST.add(entityType);
+    }
+
     public boolean checkBlacklist(EntityType<?> entityType) {
         return isInverted() != BLACKLIST.contains(entityType);
     }
