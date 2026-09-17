@@ -99,7 +99,7 @@ public class PylonBlockEntity extends BlockEntity {
 
 
     public void blacklistMob(EntityType<?> entityType) {
-        if (!BLACKLIST.contains(entityType)) BLACKLIST.add(entityType);
+        BLACKLIST.add(entityType);
     }
 
     public boolean checkBlacklist(EntityType<?> entityType) {
