@@ -234,7 +234,7 @@ public class PylonBlockEntity extends BlockEntity {
         return isInRange;
     }
 
-    public Set getBlackList() {
+    public Set<EntityType<?>> getBlackList() {
         return Set.copyOf(BLACKLIST);
     }
 

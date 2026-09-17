@@ -66,11 +66,27 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
     }
 
     public void onPressSortBy(Button button) {
-
+        if (button.getMessage().equals(Component.translatable("string.pylons.sortByAZ"))) {
+            button.setMessage(Component.translatable("string.pylons.sortByZA"));
+            sortZtoA = true;
+        }
+        else {
+            button.setMessage(Component.translatable("string.pylons.sortByAZ"));
+            sortZtoA = false;
+        }
+        sortMobEntries();
     }
 
     public void onPressIncludeSelected(Button button) {
-
+        if (button.getMessage().equals(Component.translatable("string.pylons.includeSelectedON"))) {
+            button.setMessage(Component.translatable("string.pylons.includeSelectedOFF"));
+            includeSelected = false;
+        }
+        else {
+            button.setMessage(Component.translatable("string.pylons.includeSelectedON"));
+            includeSelected = true;
+        }
+        sortMobEntries();
     }
 
     public void onPressConfirm(Button button) {
@@ -133,6 +149,10 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
                     this::onPressShowOnMap
             ));
         }
+    }
+
+    public void sortMobEntries() {
+        mobList.sortEntries(includeSelected, sortZtoA);
     }
 
     @Override
