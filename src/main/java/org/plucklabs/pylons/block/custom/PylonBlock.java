@@ -43,9 +43,6 @@ public class PylonBlock extends BaseEntityBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final MapCodec<PylonBlock> CODEC = simpleCodec(PylonBlock::new);
 
-    //Holds the level and allows you to use .range() to get range amount for current level
-    public static final EnumProperty<PylonLevels> LEVEL = EnumProperty.create("level", PylonLevels.class);
-
 
     public PylonBlock(Properties properties) {
         super(properties);
@@ -79,25 +76,25 @@ public class PylonBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         // player.sendSystemMessage(Component.literal("LeveL:" + state.getValue(LEVEL).getSerializedName()));
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof PylonBlockEntity blockEntity) {
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof PylonBlockEntity blockEntity && !player.isCrouching()) {
             PylonGUI.openMenu(player, blockEntity);
-        }
-        BlockEntity entity = level.getBlockEntity(pos);
-        if(!level.isClientSide) {
-            if (entity instanceof PylonBlockEntity pylon) {
-                BlockState blockState = Blocks.IRON_BLOCK.defaultBlockState();
-                if(player.getItemInHand(player.getUsedItemHand()).getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
-                    blockState = blockItem.getBlock().defaultBlockState();
+        } else {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (!level.isClientSide) {
+                if (entity instanceof PylonBlockEntity pylon) {
+                    BlockState blockState = Blocks.IRON_BLOCK.defaultBlockState();
+                    if (player.getItemInHand(player.getUsedItemHand()).getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
+                        blockState = blockItem.getBlock().defaultBlockState();
+                    }
+                    var packet = new HologramPositions((pylon.getTier() != PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), blockState);
+                    pylon.checkStructure((ServerLevel) level);
+                    PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
+                    PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
+
                 }
-                var packet = new HologramPositions((pylon.getTier()!=PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), blockState);
-                pylon.checkStructure((ServerLevel) level);
-                PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
-                PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
-
             }
+
         }
-
-
         return InteractionResult.SUCCESS;
     }
 
