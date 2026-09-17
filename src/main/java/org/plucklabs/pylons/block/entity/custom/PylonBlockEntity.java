@@ -92,8 +92,9 @@ public class PylonBlockEntity extends BlockEntity {
      * would negate spawns that are partially inside the range but the origin point may not be.
      */
     public boolean checkRangeFrom(BlockPos pos, BlockPos origin) {
-        AABB effectArea = getRange(origin);
-        return effectArea.intersects(new AABB(pos));
+        int distX = Math.abs(pos.getX() - origin.getX());
+        int distY = Math.abs(pos.getY() - origin.getY());
+        return distX * distX + distY * distY <= RANGE * RANGE;
     }
 
 
