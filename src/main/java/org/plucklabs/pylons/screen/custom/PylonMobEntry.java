@@ -7,17 +7,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 
 public class PylonMobEntry extends ObjectSelectionList.Entry<PylonMobEntry> {
-    private final PylonScreen parentScreen;
     private final EntityType<?> entityType;
     private final PylonMobList mobList;
-
     private final Component entityName;
 
-    public PylonMobEntry(PylonMobList mobList, EntityType<?> entityType) {
+    private boolean isBlacklisted;
+
+    public PylonMobEntry(PylonMobList mobList, EntityType<?> entityType, boolean isBlacklisted) {
         this.mobList = mobList;
         this.entityType = entityType;
-        this.parentScreen = mobList.getParentScreen();
         this.entityName = entityType.getDescription();
+        this.isBlacklisted = isBlacklisted;
+    }
+
+    @Override
+    public boolean mouseClicked(double p_331676_, double p_330254_, int p_331536_) {
+        boolean result = super.mouseClicked(p_331676_, p_330254_, p_331536_);
+        isBlacklisted = !isBlacklisted;
+        mobList.toggleBlacklist(entityType);
+        return result;
     }
 
     @Override
@@ -35,6 +43,8 @@ public class PylonMobEntry extends ObjectSelectionList.Entry<PylonMobEntry> {
                        float partialTick)
     {
         Minecraft mc = Minecraft.getInstance();
-        guiGraphics.drawString(mc.font, entityName, left, top, 0xFFFFFF);
+
+        if (isBlacklisted) guiGraphics.drawString(mc.font, entityName, left, top, 0xFF0000);
+        else guiGraphics.drawString(mc.font, entityName, left, top, 0xFFFFFF);
     }
 }

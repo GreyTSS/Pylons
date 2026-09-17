@@ -15,13 +15,12 @@ import org.plucklabs.pylons.block.ModBlocks;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
 import org.plucklabs.pylons.screen.ModMenuTypes;
 
+import java.util.Set;
+
 public class PylonMenu extends AbstractContainerMenu {
     public final PylonBlockEntity blockEntity;
     private final Level level;
-
-    public void blackListMob(EntityType<?> entityType) {
-        blockEntity.blacklistMob(entityType);
-    }
+    private final Set<EntityType<?>> blacklist;
 
     public PylonMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
@@ -31,30 +30,11 @@ public class PylonMenu extends AbstractContainerMenu {
         super(ModMenuTypes.PYLON_MENU.get(), containerId);
         this.blockEntity = ((PylonBlockEntity) blockEntity);
         this.level = inv.player.level();
+        this.blacklist = this.blockEntity.getBlackList();
     }
 
-    public void onPressSortBy() {
-
-    }
-
-    public void onPressIncludeSelected() {
-
-    }
-
-    public void onPressConfirm() {
-
-    }
-
-    public void onPressCancel() {
-
-    }
-
-    public void onPressShowOnMap() {
-
-    }
-
-    public void onPressMobEntry() {
-
+    public void setBlacklist(Set<EntityType<?>> blacklist) {
+        blockEntity.setBlacklist(blacklist);
     }
 
     // This method handles shift clicking an item to and from inventories / containers

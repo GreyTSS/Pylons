@@ -1,9 +1,16 @@
 package org.plucklabs.pylons.block.entity.custom;
 
 import dev.ryanhcode.sable.companion.SableCompanion;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -21,6 +28,7 @@ import org.plucklabs.pylons.util.PylonLevels;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class PylonBlockEntity extends BlockEntity {
@@ -32,10 +40,6 @@ public class PylonBlockEntity extends BlockEntity {
     private PylonLevels tier = PylonLevels.INACTIVE;
     private ArrayList<StructureTier> structure;
     private Map<PylonLevels,StructureTier> tierMap = new HashMap<>();
-
-
-
-
 
     private Set<EntityType<?>> BLACKLIST;
 
@@ -234,8 +238,17 @@ public class PylonBlockEntity extends BlockEntity {
         return isInRange;
     }
 
+    public void setBlacklist(Set<EntityType<?>> blacklist) {
+        this.BLACKLIST.clear();
+        this.BLACKLIST.addAll(blacklist);
+    }
+
     public Set<EntityType<?>> getBlackList() {
         return Set.copyOf(BLACKLIST);
+    }
+
+    public Set<EntityType<?>> getMutableBlacklist() {
+        return new HashSet<>(BLACKLIST);
     }
 
 
@@ -275,5 +288,33 @@ public class PylonBlockEntity extends BlockEntity {
             }
             return passed;
         }
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ListTag list = new ListTag();
+        for (EntityType<?> entityType : BLACKLIST) {
+            ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+            list.add(StringTag.valueOf(id.toString()));
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal(id.toString()));
+        }
+        tag.put("entities", list);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        Set<EntityType<?>> nbtBlacklist = new HashSet<>();
+        ListTag list = tag.getList("entities", Tag.TAG_STRING);
+
+        for (Tag sTag : list) {
+            ResourceLocation id = ResourceLocation.parse(sTag.getAsString());
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal(id.toString()));
+            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(id);
+            Minecraft.getInstance().player.sendSystemMessage(entityType.getDescription());
+            nbtBlacklist.add(entityType);
+        }
+        setBlacklist(nbtBlacklist);
     }
 }

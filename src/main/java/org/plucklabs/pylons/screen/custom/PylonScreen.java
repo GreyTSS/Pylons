@@ -18,6 +18,7 @@ import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
     private final int imageWidth;
@@ -90,11 +91,13 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
     }
 
     public void onPressConfirm(Button button) {
-
+        Set<EntityType<?>> blacklist = mobList.getBlacklist();
+        menu.setBlacklist(blacklist);
+        onPressCancel(null);
     }
 
     public void onPressCancel(Button button) {
-
+        this.onClose();
     }
 
     public void onPressShowOnMap(Button button) {
