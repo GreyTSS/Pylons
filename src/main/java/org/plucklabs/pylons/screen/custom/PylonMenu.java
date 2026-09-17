@@ -1,6 +1,8 @@
 package org.plucklabs.pylons.screen.custom;
 
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +31,30 @@ public class PylonMenu extends AbstractContainerMenu {
         super(ModMenuTypes.PYLON_MENU.get(), containerId);
         this.blockEntity = ((PylonBlockEntity) blockEntity);
         this.level = inv.player.level();
+    }
+
+    public void onPressSortBy() {
+
+    }
+
+    public void onPressIncludeSelected() {
+
+    }
+
+    public void onPressConfirm() {
+
+    }
+
+    public void onPressCancel() {
+
+    }
+
+    public void onPressShowOnMap() {
+
+    }
+
+    public void onPressMobEntry() {
+
     }
 
     // This method handles shift clicking an item to and from inventories / containers
