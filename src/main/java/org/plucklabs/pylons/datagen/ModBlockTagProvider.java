@@ -7,11 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
 import org.plucklabs.pylons.Pylons;
 import org.plucklabs.pylons.block.ModBlocks;
+import org.plucklabs.pylons.util.ModTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -34,6 +36,14 @@ public class ModBlockTagProvider extends BlockTagsProvider {
 
         tag(WRENCH_PICKUP)
                 .add(ModBlocks.PYLON.get());
+
+        tag(ModTags.Blocks.PILLAR_MATERIAL)
+                .add(Blocks.IRON_BLOCK)
+                .add(Blocks.GOLD_BLOCK)
+                .add(Blocks.LAPIS_BLOCK)
+                .add(Blocks.DIAMOND_BLOCK)
+                .add(Blocks.EMERALD_BLOCK)
+                .add(Blocks.NETHERITE_BLOCK);
 
     }
 }

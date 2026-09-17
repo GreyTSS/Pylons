@@ -9,6 +9,14 @@ version = mod_version
 group = mod_group_id
 
 repositories {
+    exclusiveContent {
+        forRepository {
+            maven { url = "https://maven.ryanhcode.dev/releases" }
+        }
+        filter {
+            includeGroup("dev.ryanhcode.sable-companion")
+        }
+    }
     mavenLocal()
 }
 
@@ -96,6 +104,11 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 
 dependencies {
+    jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:[${project.sable_companion_version},)")) {
+        version {
+            prefer(project.sable_companion_version)
+        }
+    }
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

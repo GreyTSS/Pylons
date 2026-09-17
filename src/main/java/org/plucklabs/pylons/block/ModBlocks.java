@@ -22,7 +22,10 @@ public class ModBlocks {
             ()-> new PylonBlock(BlockBehaviour.Properties.of()
                     .requiresCorrectToolForDrops()
                     .strength(4f)
-                    .sound(SoundType.STONE)));
+                    .sound(SoundType.STONE)
+                    .randomTicks()
+            ));
+
 
 
 

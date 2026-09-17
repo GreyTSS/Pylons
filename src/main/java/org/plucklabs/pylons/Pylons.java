@@ -17,13 +17,14 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.plucklabs.pylons.block.ModBlocks;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 import org.plucklabs.pylons.item.ModItems;
+import org.plucklabs.pylons.util.ModDataAttachments;
 import org.plucklabs.pylons.screen.ModMenuTypes;
 import org.plucklabs.pylons.screen.custom.PylonScreen;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Pylons.MODID)
-public class  Pylons {
+public class Pylons {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "pylons";
     // Directly reference a slf4j logger
@@ -53,6 +54,7 @@ public class  Pylons {
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModCreativeModeTabs.register(modEventBus);
+        ModDataAttachments.register(modEventBus);
         ModMenuTypes.register(modEventBus);
 
 
@@ -63,9 +65,6 @@ public class  Pylons {
     private void commonSetup(final FMLCommonSetupEvent event) {
     }
 
-    // Add the example block item to the building blocks tab
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-    }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
