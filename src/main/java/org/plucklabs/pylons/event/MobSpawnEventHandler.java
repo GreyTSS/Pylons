@@ -41,8 +41,8 @@ public class MobSpawnEventHandler {
              */
             Vec3 position = pylon.getBlockPos().getBottomCenter();
             SubLevelAccess subLevelAccess = SableCompanion.INSTANCE.getContaining(pylon.getLevel(), pylon.getBlockPos());
-
-            if (subLevelAccess != null) {
+            Boolean sublevelPresent = (subLevelAccess!=null);
+            if (sublevelPresent) {
 
                 Pose3dc pose = subLevelAccess.logicalPose();
 
@@ -51,7 +51,7 @@ public class MobSpawnEventHandler {
             }
             //System.out.println(pylon.getRange(pylon.getBlockPos()));
             //System.out.println("Pylon Tier: "+pylon.getTier().name()+"\nBlacklist: "+ pylon.getBlackList() + "\nTarget: "+event.getEntityType());
-            if (pylon.checkRange(pos) || pylon.checkRangeFrom(pos, BlockPos.containing(position))) {
+            if((!sublevelPresent && pylon.checkRange(pos)) || (sublevelPresent && pylon.checkRangeFrom(pos, BlockPos.containing(position)))) {
                 if (pylon.checkBlacklist(entityType)) {
                     cancelSpawn = true;
                     break;
