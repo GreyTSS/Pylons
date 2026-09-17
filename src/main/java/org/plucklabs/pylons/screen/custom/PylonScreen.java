@@ -2,6 +2,7 @@ package org.plucklabs.pylons.screen.custom;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -64,16 +65,27 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
         this.font = Minecraft.getInstance().font;
     }
 
-
-    public void selectMobType(PylonMobEntry entry) {
-
-    }
-
-    public void confirmEdit() {
+    public void onPressSortBy(Button button) {
 
     }
 
-    public void exitMenu() {
+    public void onPressIncludeSelected(Button button) {
+
+    }
+
+    public void onPressConfirm(Button button) {
+
+    }
+
+    public void onPressCancel(Button button) {
+
+    }
+
+    public void onPressShowOnMap(Button button) {
+
+    }
+
+    public void onPressMobEntry(Button button) {
 
     }
 
@@ -86,37 +98,31 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
         sortByButton = addRenderableWidget(new PylonButton(
                 WidgetData.SORT_BY,
                 Component.translatable("string.pylons.sortByAZ"),
-                (onPress) -> {
-                    this.sortZtoA = !this.sortZtoA;
-                    onPress.setMessage(Component.translatable("string.pylons.sortByZA"));
-                })
-        );
+                this::onPressSortBy
+        ));
 
         includeSelectedButton = addRenderableWidget(new PylonButton(
                 WidgetData.INCLUDE_SELECTED,
                 Component.translatable("string.pylons.includeSelectedON"),
-                (onPress) -> {
-                    this.includeSelected = !this.includeSelected;
-                    onPress.setMessage(Component.translatable("string.pylons.includeSelectedOFF"));
-                })
-        );
+                this::onPressIncludeSelected
+        ));
 
         confirmButton = addRenderableWidget(new PylonButton(
                 WidgetData.CONFIRM,
                 Component.translatable("string.pylons.confirm"),
-                (onPress) -> confirmEdit())
-        );
+                this::onPressConfirm
+        ));
 
         cancelButton = addRenderableWidget(new PylonButton(
                 WidgetData.CANCEL,
                 Component.translatable("string.pylons.cancel"),
-                (onPress) -> exitMenu())
-        );
+                this::onPressCancel
+        ));
 
         searchBox = addRenderableWidget(new PylonEditBox(font,
                 WidgetData.SEARCH_BOX,
-                Component.translatable("string.pylons.search"))
-        );
+                Component.translatable("string.pylons.search")
+        ));
 
         mobList = addRenderableWidget(new PylonMobList(this, WidgetData.MOB_LIST));
 
@@ -124,8 +130,8 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
             showMapButton = addRenderableWidget(new PylonButton(
                     WidgetData.SHOW_ON_MAP,
                     Component.translatable("string.pylons.showOnMap"),
-                    (onPress) -> {})
-            );
+                    this::onPressShowOnMap
+            ));
         }
     }
 
