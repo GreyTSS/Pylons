@@ -92,7 +92,7 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
 
     public void onPressConfirm(Button button) {
         Set<EntityType<?>> blacklist = mobList.getBlacklist();
-        menu.setBlacklist(blacklist);
+        menu.setBlacklist(blacklist, player);
         onPressCancel(null);
     }
 

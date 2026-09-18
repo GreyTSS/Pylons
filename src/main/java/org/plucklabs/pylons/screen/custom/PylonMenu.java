@@ -1,8 +1,10 @@
 package org.plucklabs.pylons.screen.custom;
 
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -33,8 +35,15 @@ public class PylonMenu extends AbstractContainerMenu {
         this.blacklist = this.blockEntity.getBlackList();
     }
 
-    public void setBlacklist(Set<EntityType<?>> blacklist) {
+    public void setBlacklist(Set<EntityType<?>> blacklist, Player player) {
         blockEntity.setBlacklist(blacklist);
+        if(level instanceof ServerLevel serverLevel) {
+            System.out.println("Server!");
+        } else if(level instanceof ClientLevel client){
+            System.out.println("Client!");
+        }
+        player.sendSystemMessage(Component.literal("Menu Set"+blockEntity.getBlackList().toString()));
+        blockEntity.setChanged();
     }
 
     // This method handles shift clicking an item to and from inventories / containers

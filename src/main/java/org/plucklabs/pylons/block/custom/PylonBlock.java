@@ -63,11 +63,15 @@ public class PylonBlock extends BaseEntityBlock {
 
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if(!level.isClientSide()) level.scheduleTick(pos, this, Config.pylonStructureCheckFrequency);
+        if(!level.isClientSide()) {
+            level.scheduleTick(pos, this, Config.pylonStructureCheckFrequency);
+            if(level.getBlockEntity(pos) instanceof PylonBlockEntity pylon) {
+                pylon._initialiseValuesForTestRun();
+            }
+        }
         if(level.hasNeighborSignal(pos)) {
             level.setBlockAndUpdate(pos, level.getBlockState(pos).setValue(POWERED, true));
         }
-
     }
 
 

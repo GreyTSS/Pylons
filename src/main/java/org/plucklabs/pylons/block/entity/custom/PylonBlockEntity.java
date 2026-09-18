@@ -41,9 +41,9 @@ public class PylonBlockEntity extends BlockEntity {
     private ArrayList<StructureTier> structure;
     private Map<PylonLevels,StructureTier> tierMap = new HashMap<>();
 
-    private Set<EntityType<?>> BLACKLIST;
+    private Set<EntityType<?>> BLACKLIST = new HashSet<>();
 
-    private void _initialiseValuesForTestRun() {
+    public void _initialiseValuesForTestRun() {
         this.setRange(100);
         BLACKLIST = new HashSet<>();
         BLACKLIST.add(EntityType.ZOMBIE);
@@ -51,6 +51,7 @@ public class PylonBlockEntity extends BlockEntity {
         BLACKLIST.add(EntityType.SKELETON);
         BLACKLIST.add(EntityType.SLIME);
         BLACKLIST.add(EntityType.COW);
+        this.setChanged();
     }
 
 
@@ -61,8 +62,6 @@ public class PylonBlockEntity extends BlockEntity {
 
     public PylonBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.PYLON_BE.get(), pos, blockState);
-
-        _initialiseValuesForTestRun();
     }
 
     public void setRange(double range) {
@@ -104,6 +103,7 @@ public class PylonBlockEntity extends BlockEntity {
 
     public void blacklistMob(EntityType<?> entityType) {
         BLACKLIST.add(entityType);
+        this.setChanged();
     }
 
     public boolean checkBlacklist(EntityType<?> entityType) {
@@ -115,7 +115,7 @@ public class PylonBlockEntity extends BlockEntity {
         super.onLoad();
         cachePillars();
         LOADED_PYLONS.add(this);
-        _initialiseValuesForTestRun();
+        //_initialiseValuesForTestRun();
     }
 
     @Override
@@ -241,6 +241,7 @@ public class PylonBlockEntity extends BlockEntity {
     public void setBlacklist(Set<EntityType<?>> blacklist) {
         this.BLACKLIST.clear();
         this.BLACKLIST.addAll(blacklist);
+        this.setChanged();
     }
 
     public Set<EntityType<?>> getBlackList() {
@@ -293,12 +294,14 @@ public class PylonBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+        System.out.println("Current Blacklist Pre Save"+BLACKLIST);
         ListTag list = new ListTag();
         for (EntityType<?> entityType : BLACKLIST) {
             ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
             list.add(StringTag.valueOf(id.toString()));
-            Minecraft.getInstance().player.sendSystemMessage(Component.literal(id.toString()));
+            //Minecraft.getInstance().player.sendSystemMessage(Component.literal(id.toString()));
         }
+        System.out.println("Saved: "+list);
         tag.put("entities", list);
     }
 
@@ -306,15 +309,17 @@ public class PylonBlockEntity extends BlockEntity {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         Set<EntityType<?>> nbtBlacklist = new HashSet<>();
+        Set<String> nbtBlacklistDisplay = new HashSet<>();
         ListTag list = tag.getList("entities", Tag.TAG_STRING);
 
         for (Tag sTag : list) {
             ResourceLocation id = ResourceLocation.parse(sTag.getAsString());
-            Minecraft.getInstance().player.sendSystemMessage(Component.literal(id.toString()));
+            //System.out.println(BuiltInRegistries.ENTITY_TYPE.containsKey(id));
             EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(id);
-            Minecraft.getInstance().player.sendSystemMessage(entityType.getDescription());
             nbtBlacklist.add(entityType);
+            nbtBlacklistDisplay.add(entityType.getDescriptionId());
         }
+        System.out.println("Loaded" + nbtBlacklistDisplay);
         setBlacklist(nbtBlacklist);
     }
 }
