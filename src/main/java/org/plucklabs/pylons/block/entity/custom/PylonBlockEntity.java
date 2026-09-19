@@ -30,6 +30,8 @@ import org.plucklabs.pylons.block.entity.ModBlockEntities;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.plucklabs.pylons.block.custom.PylonBlock.TIER;
+
 
 public class PylonBlockEntity extends BlockEntity {
     private double RANGE;
@@ -37,7 +39,6 @@ public class PylonBlockEntity extends BlockEntity {
 
     private static final Set<PylonBlockEntity> LOADED_PYLONS = new HashSet<>();
 
-    private PylonLevels tier = PylonLevels.INACTIVE;
     private ArrayList<StructureTier> structure;
     private Map<PylonLevels,StructureTier> tierMap = new HashMap<>();
 
@@ -57,7 +58,7 @@ public class PylonBlockEntity extends BlockEntity {
 
 
 
-    public PylonLevels getTier(){return tier;}
+    public PylonLevels getTier(){return getBlockState().getValue(TIER);}
 
 
     public PylonBlockEntity(BlockPos pos, BlockState blockState) {
@@ -69,7 +70,7 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
     public AABB getRange(BlockPos origin) {;
-        double range = this.tier.range();
+        double range = this.getTier().range();
         return new AABB(origin).inflate(range);
     }
 
@@ -137,16 +138,16 @@ public class PylonBlockEntity extends BlockEntity {
      *              and thus passes it's serverlevel from there.
      */
     public void checkStructure(ServerLevel level, ArrayList<StructureTier> struct) {
-        PylonLevels oldTier = this.tier;
-        this.tier = PylonLevels.INACTIVE;
+        PylonLevels oldTier = getTier();
+        level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(TIER, PylonLevels.INACTIVE));
         var blockState = level.getBlockState(getBlockPos());
         if(!blockState.hasProperty(BlockStateProperties.POWERED) || !blockState.getValue(BlockStateProperties.POWERED)) {
             if (struct == null) return;
             for (StructureTier structureTier : struct) {
                 if (structureTier.check(level)) {
-                    this.tier = structureTier.tier;
+                    level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(TIER, structureTier.tier));
                 } else {
-                    if (this.tier != oldTier) {
+                    if (getTier() != oldTier) {
                         //This resets packets when the tier changes, so if a player is still holding a block they get the updated pillar positions :p
                         PylonHologramServerTickEvent.cache.clear();
                     }
@@ -178,7 +179,7 @@ public class PylonBlockEntity extends BlockEntity {
     }
 
     public PylonLevels getLowestInvalidTier() {
-        return PylonLevels.values()[Math.min(tier.ordinal()+1, PylonLevels.values().length-1)];
+        return PylonLevels.values()[Math.min(this.getTier().ordinal()+1, PylonLevels.values().length-1)];
     }
 
 

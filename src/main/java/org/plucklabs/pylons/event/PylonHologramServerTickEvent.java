@@ -1,6 +1,7 @@
 package org.plucklabs.pylons.event;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Blocks;
@@ -17,7 +18,6 @@ import org.plucklabs.pylons.block.ModBlocks;
 import org.plucklabs.pylons.block.entity.custom.PylonBlockEntity;
 import org.plucklabs.pylons.networking.packet.HologramPositions;
 import org.plucklabs.pylons.util.ModTags;
-import org.plucklabs.pylons.util.PillarHelpers;
 import org.plucklabs.pylons.util.PylonLevels;
 
 import java.util.*;
@@ -50,27 +50,35 @@ public class PylonHologramServerTickEvent {
      * The pre-tick event is used to tick-down the two maps that store cooldowns. One for the pulsing display triggered
      * when you shift right-click a Pylon, and the other to enforce packets don't fire too frequently when holding
      * an unplaced pylon and previewing pillar locations.
-     * @param event
+     * @param event ServerTickEvent.pre
      */
     @SubscribeEvent
     public static void tick(ServerTickEvent.Pre event) {
+        if(displayPulsing.isEmpty() && packetLimiter.isEmpty()) {
+            return;
+        }
 
-        if(displayPulsing.isEmpty() && packetLimiter.isEmpty()) return;
 
         //Pulse
+        Set<UUID> resets = new HashSet<>();
         displayPulsing.entrySet().removeIf((entry) -> {
-            int newValue = entry.getValue()-1;
+            int newValue = entry.getValue() - 1;
             entry.setValue(newValue);
-            if(newValue <= 0) {
-                UUID key = entry.getKey();
-                if(event.getServer().getPlayerList().getPlayer(key) instanceof ServerPlayer player) {
-                    PacketDistributor.sendToPlayer(player, DEFAULT_BLANK_HOLOGRAM);
-                }
+            if (newValue <= 0) {
+                event.getServer().getPlayerList().getPlayer(entry.getKey()).sendSystemMessage(Component.literal("Removed!"));
+                resets.add(entry.getKey());
                 return true;
             }
             return false;
         });
 
+        for(UUID uuid : resets) {
+            if(event.getServer().getPlayerList().getPlayer(uuid) instanceof ServerPlayer serverPlayer) {
+                PacketDistributor.sendToPlayer(serverPlayer, DEFAULT_BLANK_HOLOGRAM);
+                data.put(uuid, DEFAULT_BLANK_HOLOGRAM);
+            }
+
+        }
         //Preview
         packetLimiter.entrySet().removeIf((entry) -> {
             int newValue = entry.getValue()-1;
@@ -84,7 +92,7 @@ public class PylonHologramServerTickEvent {
     /**
      * The post tick event fires after new Data has been collected in the Player tick event, and compares cached data
      * to current state data, determining which Players need to be updated with fresh packets.
-     * @param event
+     * @param event ServerTickEvent.Post
      */
     @SubscribeEvent
     public static void tickPost(ServerTickEvent.Post event) {
@@ -98,6 +106,13 @@ public class PylonHologramServerTickEvent {
            if(!currentPacket.equals(cachedPacket)) {
                deltaAdded.put(uuid, currentPacket);
            }
+
+        });
+
+        cache.forEach((uuid, cachedPacket) -> {
+            if(!data.containsKey(uuid) && !displayPulsing.containsKey(uuid)) {
+                deltaAdded.put(uuid, DEFAULT_BLANK_HOLOGRAM);
+            }
         });
 
 
@@ -120,7 +135,7 @@ public class PylonHologramServerTickEvent {
         //Early Exits
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        if(PylonBlockEntity.getLoadedPylons().isEmpty()) {
+        if (PylonBlockEntity.getLoadedPylons().isEmpty()) {
             displayPulsing.clear();
             cache.clear();
             data.clear();
@@ -128,44 +143,41 @@ public class PylonHologramServerTickEvent {
         }
 
 
-
-
+        UUID uuid = player.getUUID();
         //Cache values
+        if (player.getMainHandItem().getItem() instanceof BlockItem blockItem) {
+            if (blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
+                Set<PylonBlockEntity> entities = Set.copyOf(PylonBlockEntity.getLoadedPylons());
+                for (PylonBlockEntity pylon : entities) {
+                    if (pylon.checkHologramRange(player)) {
 
-        if(player.getMainHandItem().getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
-            for (PylonBlockEntity pylon : PylonBlockEntity.getLoadedPylons()) {
-                if (pylon.checkHologramRange(player)) {
-                    var tier = pylon.getTier();
-                    cacheInfo(data, player.getUUID(), new HologramPositions(pylon.getBlockPos(), pylon.getLowestInvalidTier(), blockItem.getBlock().defaultBlockState()));
-                    break;
-                } else {
-                    cacheInfo(data, player.getUUID(), DEFAULT_BLANK_HOLOGRAM);
+                        displayPulsing.remove(uuid);
+                        var tier = pylon.getLowestInvalidTier();
+                        System.out.println(tier.getSerializedName());
+                        cacheInfo(data, player.getUUID(), new HologramPositions(pylon.getBlockPos(), pylon.getLowestInvalidTier(), blockItem.getBlock().defaultBlockState()));
+                        return;
+                    }
                 }
-            }
-        }else if(player.getMainHandItem().getItem() instanceof BlockItem blockItem && blockItem.getBlock() == ModBlocks.PYLON.get()){
-            HitResult hit = player.pick(5.0D, 1.0f, false);
-            BlockPos pos;
-            if(hit instanceof BlockHitResult blockHit) {
-
+                resetIfNotPulsing(uuid);
+            } else if (blockItem.getBlock() == ModBlocks.PYLON.get()) {
+                HitResult hit = player.pick(5.0D, 1.0f, false);
+                BlockPos pos;
+                if (hit instanceof BlockHitResult blockHit) {
                     pos = blockHit.getBlockPos().relative(blockHit.getDirection());
-
-
-            } else {
-                pos = player.blockPosition();
+                } else {
+                    pos = player.blockPosition();
+                }
+                cacheWithCooldown(data, uuid, new HologramPositions(pos, PylonLevels.LEVEL_1, Blocks.IRON_BLOCK.defaultBlockState()));
             }
-            cacheInfo(data, player.getUUID(), new HologramPositions(pos, PylonLevels.LEVEL_1, Blocks.IRON_BLOCK.defaultBlockState()));
 
         } else {
-            cacheInfo(data, player.getUUID(), DEFAULT_BLANK_HOLOGRAM);
+            resetIfNotPulsing(uuid);
         }
+    }
 
-
-
-
-
-
-
-
+    public static void resetIfNotPulsing(UUID uuid) {
+        if(displayPulsing.containsKey(uuid)) return;
+        cacheInfo(data, uuid, DEFAULT_BLANK_HOLOGRAM);
     }
 
     
@@ -173,12 +185,23 @@ public class PylonHologramServerTickEvent {
         if(hologramPositions == DEFAULT_BLANK_HOLOGRAM) {
             displayPulsing.remove(uuid);
         }
-        if(!packetLimiter.containsKey(uuid)) {
+
             map.put(uuid, hologramPositions);
+
+    }
+
+    private static void cacheWithCooldown(Map<UUID, HologramPositions> map, UUID uuid, HologramPositions hologramPositions) {
+        if(!packetLimiter.containsKey(uuid)) {
+            cacheInfo(map, uuid, hologramPositions);
             packetLimiter.put(uuid, PACKET_TICK_COOLDOWN);
         }
     }
 
+
+    public static void pulseHologram(ServerPlayer player, HologramPositions packet){
+        displayPulsing.put(player.getUUID(), Config.pylonHologramFlashDuration);
+        PacketDistributor.sendToPlayer(player, packet);
+    }
 
     
     

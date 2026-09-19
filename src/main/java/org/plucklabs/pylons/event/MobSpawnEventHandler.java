@@ -31,7 +31,12 @@ public class MobSpawnEventHandler {
         Set<PylonBlockEntity> loadedPylons = PylonBlockEntity.getLoadedPylons();
 
         boolean cancelSpawn = false;
-        for (PylonBlockEntity pylon : loadedPylons) {
+        Set<PylonBlockEntity> loadedPylonsCopy;
+        synchronized (loadedPylons) {
+            loadedPylonsCopy = Set.copyOf(loadedPylons);
+        }
+
+        for (PylonBlockEntity pylon : loadedPylonsCopy) {
 
 
             /*
