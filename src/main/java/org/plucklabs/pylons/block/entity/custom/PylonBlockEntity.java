@@ -136,13 +136,13 @@ public class PylonBlockEntity extends BlockEntity {
      * @param level This method is called from a method in the block class, only on server-side,
      *              and thus passes it's serverlevel from there.
      */
-    public void checkStructure(ServerLevel level) {
+    public void checkStructure(ServerLevel level, ArrayList<StructureTier> struct) {
         PylonLevels oldTier = this.tier;
         this.tier = PylonLevels.INACTIVE;
         var blockState = level.getBlockState(getBlockPos());
         if(!blockState.hasProperty(BlockStateProperties.POWERED) || !blockState.getValue(BlockStateProperties.POWERED)) {
-            if (structure == null) return;
-            for (StructureTier structureTier : structure) {
+            if (struct == null) return;
+            for (StructureTier structureTier : struct) {
                 if (structureTier.check(level)) {
                     this.tier = structureTier.tier;
                 } else {
@@ -156,6 +156,11 @@ public class PylonBlockEntity extends BlockEntity {
         }
     }
 
+    public void checkStructure(ServerLevel level) {
+        checkStructure(level, structure);
+    }
+
+
     /**
      * Cache Pillars uses the PillarHelpers pillar prefabs, along with some hardcoded relative coordinates,
      * to create the pillar array desired in game. structure must be an ordered list, as each tier check exits early
@@ -163,47 +168,13 @@ public class PylonBlockEntity extends BlockEntity {
      * think it's necessary to store them long-term.
      */
     public void cachePillars() {
-        structure = new ArrayList<>();
+        //structure = new ArrayList<>();
         tierMap.clear();
         BlockPos pos = this.getBlockPos();
-        var x = pos.getX();
-        var y = pos.getY();
-        var z = pos.getZ();
-
-        var tier1Offset = 5;
-        var tier2Offset = 6;
-
-        //Tier 1.
-        Set<Pillar> tier1Pillars = new HashSet<>();
-        tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x,y,z+tier1Offset)));
-        tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x,y,z-tier1Offset)));
-        tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x+tier1Offset,y,z)));
-        tier1Pillars.add(PillarHelpers.CreateTier1Pillar(new BlockPos(x-tier1Offset,y,z)));
-        StructureTier tier1Structure = new StructureTier(tier1Pillars, PylonLevels.LEVEL_1);
-
-        structure.add(tier1Structure);
-        tierMap.put(tier1Structure.tier, tier1Structure);
-
-        //Tier 2.
-        Set<Pillar> tier2Pillars = new HashSet<>();
-        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x+tier2Offset,y,z+tier2Offset)));
-        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x-tier2Offset,y,z-tier2Offset)));
-        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x-tier2Offset,y,z+tier2Offset)));
-        tier2Pillars.add(PillarHelpers.CreateTier2Pillar(new BlockPos(x+tier2Offset,y,z-tier2Offset)));
-
-        StructureTier tier2Structure = new StructureTier(tier2Pillars, PylonLevels.LEVEL_2);
-
-        structure.add(tier2Structure);
-        tierMap.put(tier2Structure.tier, tier2Structure);
-
-        //Tier 3.
-        Set<Pillar> tier3Pillars = new HashSet<>();
-        tier3Pillars.add(PillarHelpers.CreateTier3Pillar(pos));
-
-        StructureTier tier3Structure = new StructureTier(tier3Pillars, PylonLevels.LEVEL_3);
-
-        structure.add(tier3Structure);
-        tierMap.put(tier3Structure.tier, tier3Structure);
+        structure = PillarHelpers.createStructure(pos);
+        for(StructureTier tier : structure) {
+            tierMap.put(tier.tier,tier);
+        }
     }
 
     public Set<BlockPos> getLowestInvalidTier() {

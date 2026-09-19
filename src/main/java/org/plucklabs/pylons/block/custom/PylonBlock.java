@@ -93,7 +93,7 @@ public class PylonBlock extends BaseEntityBlock {
                     var packet = new HologramPositions((pylon.getTier() != PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), blockState);
                     pylon.checkStructure((ServerLevel) level);
                     PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
-                    PylonHologramServerTickEvent.timer.put(player.getUUID(), Config.pylonHologramFlashDuration);
+                    PylonHologramServerTickEvent.displayPulsing.put(player.getUUID(), Config.pylonHologramFlashDuration);
 
                 }
             }
