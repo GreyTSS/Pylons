@@ -12,11 +12,10 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.joml.Vector3f;
 import org.plucklabs.pylons.networking.packet.HologramPositions;
 import org.plucklabs.pylons.util.ModDataAttachments;
+import org.plucklabs.pylons.util.PillarHelpers;
+import org.plucklabs.pylons.util.PylonLevels;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 //Handling Packets from Server -> Client
 
@@ -33,67 +32,68 @@ public class ClientPayloadHandler {
 
     public static void handleDataOnMain(HologramPositions hologramPositions, IPayloadContext context) {
         context.enqueueWork(() -> {
-            context.player().sendSystemMessage(Component.literal("Position Count: " + hologramPositions.positions().size()));
+            context.player().sendSystemMessage(Component.literal("Packet"));
 
-            HologramPositions attachment = context.player().getData(ModDataAttachments.PYLON_HOLOGRAM);
+            //HologramPositions attachment = context.player().getData(ModDataAttachments.PYLON_HOLOGRAM);
 
             clearDisplays(context.player().getUUID());
 
-            if (hologramPositions.draw() && !hologramPositions.positions().isEmpty()) {
-                var level = context.player().level();
-                if (!(level instanceof ClientLevel clientLevel)) return;
+            if(hologramPositions.pillarLevel() == PylonLevels.INACTIVE) return;
+
+            Set<BlockPos> positions = PillarHelpers.getTier(hologramPositions.origin(), hologramPositions.pillarLevel()).getPositions();
+
+            var level = context.player().level();
+            if (!(level instanceof ClientLevel clientLevel)) return;
 
 
-                //Matrix Transformation for Z-Fighting
-                float scaleFactor = 0.24f;
-                float offset = (1.0f - scaleFactor) / 2.0f;
+            //Matrix Transformation for Z-Fighting
+            float scaleFactor = 0.24f;
+            float offset = (1.0f - scaleFactor) / 2.0f;
 
-                Transformation transformation = new Transformation(
-                        new Vector3f(offset, offset, offset),
-                        null,
-                        new Vector3f(scaleFactor, scaleFactor, scaleFactor),
-                        null
-                );
-
-
-                //Tag for Brightness
-                CompoundTag brightness = new CompoundTag();
-                brightness.putInt("block", 15);
-                brightness.putInt("sky", 15);
-
-                //Create NBT Data to attach
-                CompoundTag nbt = new CompoundTag();
-                nbt.putBoolean("glowing", true);
-                nbt.putInt("glow_color_override", 0xFFFF0000);
-                nbt.put("brightness", brightness);
-                nbt.put("block_state", NbtUtils.writeBlockState(hologramPositions.blockState()));
+            Transformation transformation = new Transformation(
+                    new Vector3f(offset, offset, offset),
+                    null,
+                    new Vector3f(scaleFactor, scaleFactor, scaleFactor),
+                    null
+            );
 
 
-                for (BlockPos pos : hologramPositions.positions()) {
-                    //Create a block display
-                    Display.BlockDisplay display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, level);
+            //Tag for Brightness
+            CompoundTag brightness = new CompoundTag();
+            brightness.putInt("block", 15);
+            brightness.putInt("sky", 15);
+
+            //Create NBT Data to attach
+            CompoundTag nbt = new CompoundTag();
+            nbt.putBoolean("glowing", true);
+            nbt.putInt("glow_color_override", 0xFFFF0000);
+            nbt.put("brightness", brightness);
+            nbt.put("block_state", NbtUtils.writeBlockState(hologramPositions.blockState()));
 
 
-                    //Add matrix to NBT
-                    Transformation.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, transformation)
-                            .result()
-                            .ifPresent(tag -> nbt.put("transformation", tag));
+            for (BlockPos pos : positions) {
+                //Create a block display
+                Display.BlockDisplay display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, level);
 
 
-                    //Configure Display
-                    display.load(nbt);
+                //Add matrix to NBT
+                Transformation.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, transformation)
+                        .result()
+                        .ifPresent(tag -> nbt.put("transformation", tag));
 
 
-                    display.setPos(pos.getX(), pos.getY(), pos.getZ());
-                    System.out.println("Added: [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]");
+                //Configure Display
+                display.load(nbt);
 
-                    //Display it
-                    clientLevel.addEntity(display);
-                    ACTIVE_BLOCK_DISPLAYS.computeIfAbsent(context.player().getUUID(), k -> new HashSet<>()).add(display);
 
-                }
+                display.setPos(pos.getX(), pos.getY(), pos.getZ());
+                System.out.println("Added: [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]");
+
+                //Display it
+                clientLevel.addEntity(display);
+                ACTIVE_BLOCK_DISPLAYS.computeIfAbsent(context.player().getUUID(), k -> new HashSet<>()).add(display);
+
             }
-            ;
         });
     }
 

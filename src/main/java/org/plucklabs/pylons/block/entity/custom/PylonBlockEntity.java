@@ -177,20 +177,8 @@ public class PylonBlockEntity extends BlockEntity {
         }
     }
 
-    public Set<BlockPos> getLowestInvalidTier() {
-        if(tier.ordinal() == PylonLevels.values().length - 1) {
-            return new HashSet<>();
-
-        } else {
-            StructureTier nextTier = tierMap.get(PylonLevels.values()[tier.ordinal()+1]);
-            if(nextTier == null) return new HashSet<>();
-            Set<BlockPos> positions = new HashSet<>();
-            for(Pillar pillar : nextTier.pillars) {
-                positions.addAll(pillar.positions);
-            }
-            return positions;
-
-        }
+    public PylonLevels getLowestInvalidTier() {
+        return PylonLevels.values()[Math.min(tier.ordinal()+1, PylonLevels.values().length-1)];
     }
 
 
@@ -259,6 +247,14 @@ public class PylonBlockEntity extends BlockEntity {
                 break;
             }
             return passed;
+        }
+
+        public Set<BlockPos> getPositions() {
+            Set<BlockPos> positions = new HashSet<>();
+            for(Pillar pillar : pillars) {
+                positions.addAll(pillar.positions());
+            }
+            return positions;
         }
     }
 

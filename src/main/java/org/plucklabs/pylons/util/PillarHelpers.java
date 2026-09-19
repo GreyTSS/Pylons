@@ -143,7 +143,7 @@ public class PillarHelpers {
 
     }
 
-
+    public static PylonBlockEntity.StructureTier createTier2(BlockPos pos) {return createTier2(pos.getX(), pos.getY(), pos.getZ(), 6);}
     public static PylonBlockEntity.StructureTier createTier2(int x, int y, int z, int offset) {
         //Tier 2.
         Set<PylonBlockEntity.Pillar> tier2Pillars = new HashSet<>();
@@ -161,7 +161,19 @@ public class PillarHelpers {
     }
 
 
+    public static PylonBlockEntity.StructureTier getTier(BlockPos origin, PylonLevels tier) {
+        PylonBlockEntity.StructureTier returnTier;
+        switch(tier) {
+            case LEVEL_1 -> returnTier = createTier1(origin);
+            case LEVEL_2 -> returnTier = createTier2(origin);
+            case LEVEL_3 -> returnTier = createTier3(origin);
+            default -> returnTier = null;
+        }
 
+        return returnTier;
+
+
+    }
 
 
 

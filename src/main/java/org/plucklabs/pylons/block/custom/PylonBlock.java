@@ -90,7 +90,8 @@ public class PylonBlock extends BaseEntityBlock {
                     if (player.getItemInHand(player.getUsedItemHand()).getItem() instanceof BlockItem blockItem && blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
                         blockState = blockItem.getBlock().defaultBlockState();
                     }
-                    var packet = new HologramPositions((pylon.getTier() != PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), blockState);
+                    if(pylon.getTier() == PylonLevels.LEVEL_3) return InteractionResult.SUCCESS;
+                    var packet = new HologramPositions(pos, pylon.getLowestInvalidTier(), blockState);
                     pylon.checkStructure((ServerLevel) level);
                     PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
                     PylonHologramServerTickEvent.displayPulsing.put(player.getUUID(), Config.pylonHologramFlashDuration);

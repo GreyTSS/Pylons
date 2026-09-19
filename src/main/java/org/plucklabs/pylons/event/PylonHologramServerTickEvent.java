@@ -44,7 +44,7 @@ public class PylonHologramServerTickEvent {
     public static final Map<UUID, HologramPositions> deltaAdded = new HashMap<>();
 
     //This value is used to clear the DataAttachment on the Player that the client uses to display a hologram.
-    private static final HologramPositions DEFAULT_BLANK_HOLOGRAM = new HologramPositions(false, new HashSet<>(), Blocks.IRON_BLOCK.defaultBlockState());
+    private static final HologramPositions DEFAULT_BLANK_HOLOGRAM = new HologramPositions(new BlockPos(0,0,0), PylonLevels.INACTIVE, Blocks.IRON_BLOCK.defaultBlockState());
 
     /**
      * The pre-tick event is used to tick-down the two maps that store cooldowns. One for the pulsing display triggered
@@ -136,7 +136,7 @@ public class PylonHologramServerTickEvent {
             for (PylonBlockEntity pylon : PylonBlockEntity.getLoadedPylons()) {
                 if (pylon.checkHologramRange(player)) {
                     var tier = pylon.getTier();
-                    cacheInfo(data, player.getUUID(), new HologramPositions((pylon.getTier() != PylonLevels.LEVEL_3), pylon.getLowestInvalidTier(), blockItem.getBlock().defaultBlockState()));
+                    cacheInfo(data, player.getUUID(), new HologramPositions(pylon.getBlockPos(), pylon.getLowestInvalidTier(), blockItem.getBlock().defaultBlockState()));
                     break;
                 } else {
                     cacheInfo(data, player.getUUID(), DEFAULT_BLANK_HOLOGRAM);
@@ -153,7 +153,7 @@ public class PylonHologramServerTickEvent {
             } else {
                 pos = player.blockPosition();
             }
-            cacheInfo(data, player.getUUID(), new HologramPositions(true, PillarHelpers.getPlacementPillars(pos), Blocks.IRON_BLOCK.defaultBlockState()));
+            cacheInfo(data, player.getUUID(), new HologramPositions(pos, PylonLevels.LEVEL_1, Blocks.IRON_BLOCK.defaultBlockState()));
 
         } else {
             cacheInfo(data, player.getUUID(), DEFAULT_BLANK_HOLOGRAM);
