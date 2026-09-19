@@ -19,7 +19,7 @@ public class Config {
     private static final ModConfigSpec.IntValue PYLON_LEVEL_3_RANGE = BUILDER.defineInRange("level-3-pylon-range", 192,48,2560);
     private static final ModConfigSpec.IntValue PYLON_HOLOGRAM_FLASH_DURATION = BUILDER.defineInRange("hologram_flash_duration", 60, 1, 600);
     private static final ModConfigSpec.IntValue PYLON_STRUCTURE_CHECK_FREQUENCY = BUILDER.defineInRange("pylon_structure_check_frequency", 100, 20, 2560);
-
+    private static final ModConfigSpec.IntValue PYLON_PREVIEW_UPDATE_FREQUENCY = BUILDER.defineInRange("pylon_preview_update_frequency", 5, 1, 200);
     static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int pylonHologramDetectionRange;
@@ -28,6 +28,7 @@ public class Config {
     public static int pylonRangeLevel3;
     public static int pylonHologramFlashDuration;
     public static int pylonStructureCheckFrequency;
+    public static int pylonPreviewUpdateFrequency;
 
 
     @SubscribeEvent
@@ -39,5 +40,6 @@ public class Config {
 
         pylonHologramDetectionRange = PYLON_HOLOGRAM_DETECTION_RANGE.get();
         pylonHologramFlashDuration = PYLON_HOLOGRAM_FLASH_DURATION.get();
+        pylonPreviewUpdateFrequency = PYLON_PREVIEW_UPDATE_FREQUENCY.get();
     }
 }

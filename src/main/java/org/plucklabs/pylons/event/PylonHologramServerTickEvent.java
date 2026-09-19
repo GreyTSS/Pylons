@@ -1,7 +1,9 @@
 package org.plucklabs.pylons.event;
 
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Blocks;
@@ -31,9 +33,8 @@ public class PylonHologramServerTickEvent {
 
     //Packet limiter forces a cooldown on the player when holding a pylon and displaying structure holograms in relation to targeted block.
     //Since it defaults to player block pos when no block is targeted, it fires packets on every microscopic movement the player makes unless
-    //placed on a cooldown. Currently, cooldown is PACKET_TICK_COOLDOWN, but will later be moved to config.
+    //placed on a cooldown. Duration set in config.
     public static final Map<UUID, Integer> packetLimiter = new HashMap<>();
-    public static final int PACKET_TICK_COOLDOWN = 20;
 
     //Data stores the current state that the client should hold, where as data holds the previous state the client should hold.
     //Packets are only ever fired to a client when there is a differance between current and previous states for that Player.
@@ -72,6 +73,7 @@ public class PylonHologramServerTickEvent {
             return false;
         });
 
+        //Clear the packets after removed.
         for(UUID uuid : resets) {
             if(event.getServer().getPlayerList().getPlayer(uuid) instanceof ServerPlayer serverPlayer) {
                 PacketDistributor.sendToPlayer(serverPlayer, DEFAULT_BLANK_HOLOGRAM);
@@ -144,13 +146,13 @@ public class PylonHologramServerTickEvent {
 
 
         UUID uuid = player.getUUID();
-        //Cache values
+        //If Holding relevant items
         if (player.getMainHandItem().getItem() instanceof BlockItem blockItem) {
+            //Next tier hologram
             if (blockItem.getBlock().defaultBlockState().is(ModTags.Blocks.PILLAR_MATERIAL)) {
                 Set<PylonBlockEntity> entities = Set.copyOf(PylonBlockEntity.getLoadedPylons());
                 for (PylonBlockEntity pylon : entities) {
                     if (pylon.checkHologramRange(player)) {
-
                         displayPulsing.remove(uuid);
                         var tier = pylon.getLowestInvalidTier();
                         System.out.println(tier.getSerializedName());
@@ -159,11 +161,19 @@ public class PylonHologramServerTickEvent {
                     }
                 }
                 resetIfNotPulsing(uuid);
+            //New Placement Preview
             } else if (blockItem.getBlock() == ModBlocks.PYLON.get()) {
+                //Copied from DebugScreenOverlay.class#render()
                 HitResult hit = player.pick(5.0D, 1.0f, false);
                 BlockPos pos;
                 if (hit instanceof BlockHitResult blockHit) {
-                    pos = blockHit.getBlockPos().relative(blockHit.getDirection());
+                    var level = player.level();
+                    if(level instanceof ServerLevel server && server.getBlockState(blockHit.getBlockPos()).getBlock() != Blocks.AIR) {
+                        pos = blockHit.getBlockPos().relative(blockHit.getDirection());
+                    } else {
+                        pos = player.blockPosition();
+                    }
+
                 } else {
                     pos = player.blockPosition();
                 }
@@ -193,7 +203,7 @@ public class PylonHologramServerTickEvent {
     private static void cacheWithCooldown(Map<UUID, HologramPositions> map, UUID uuid, HologramPositions hologramPositions) {
         if(!packetLimiter.containsKey(uuid)) {
             cacheInfo(map, uuid, hologramPositions);
-            packetLimiter.put(uuid, PACKET_TICK_COOLDOWN);
+            packetLimiter.put(uuid, Config.pylonStructureCheckFrequency);
         }
     }
 

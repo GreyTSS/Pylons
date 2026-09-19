@@ -1,7 +1,4 @@
 package org.plucklabs.pylons.block.entity.custom;
-
-import dev.ryanhcode.sable.companion.SableCompanion;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -9,17 +6,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.plucklabs.pylons.Config;
 import org.plucklabs.pylons.event.PylonHologramServerTickEvent;
 import org.plucklabs.pylons.util.ModTags;
@@ -28,7 +22,6 @@ import org.plucklabs.pylons.util.PylonLevels;
 import org.plucklabs.pylons.block.entity.ModBlockEntities;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.plucklabs.pylons.block.custom.PylonBlock.TIER;
 
