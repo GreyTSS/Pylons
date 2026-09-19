@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -164,7 +165,7 @@ public class PylonHologramServerTickEvent {
             //New Placement Preview
             } else if (blockItem.getBlock() == ModBlocks.PYLON.get()) {
                 //Copied from DebugScreenOverlay.class#render()
-                HitResult hit = player.pick(5.0D, 1.0f, false);
+                HitResult hit = player.pick(player.blockInteractionRange(), 1.0f, false);
                 BlockPos pos;
                 if (hit instanceof BlockHitResult blockHit) {
                     var level = player.level();
