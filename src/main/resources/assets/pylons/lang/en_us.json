@@ -11,5 +11,10 @@
   "string.pylons.cancel": "Cancel",
   "string.pylons.search": "Search",
   "string.pylons.menu": "Pylon",
-  "string.pylons.showOnMap": "Show range on map"
+  "string.pylons.showOnMap": "Show range on map",
+
+
+
+  "advancements.pylon.craft_pylon.title": "Cleanser of Evil",
+  "advancements.pylon.craft_pylon.description": "Craft a Pylon and prevent mobs from spawning nearby."
 }

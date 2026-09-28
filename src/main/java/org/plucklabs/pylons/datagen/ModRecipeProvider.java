@@ -21,13 +21,13 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
     @Override
     protected void buildRecipes(RecipeOutput recipeOutput) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.PYLON.get())
-                .pattern("EDE")
-                .pattern("EBE")
-                .pattern("SSS")
+                .pattern("GDG")
+                .pattern("GBG")
+                .pattern("EEE")
                 .define('E', Items.END_STONE)
                 .define('D', Items.DIAMOND)
                 .define('B', Items.DRAGON_BREATH)
-                .define('S', Items.SMOOTH_STONE)
+                .define('G', Items.GLASS)
                 .unlockedBy("has_dragon_breath", has(Items.DRAGON_BREATH)).save(recipeOutput);
 
     }
