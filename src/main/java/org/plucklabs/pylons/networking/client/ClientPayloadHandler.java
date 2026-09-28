@@ -87,7 +87,6 @@ public class ClientPayloadHandler {
 
 
                 display.setPos(pos.getX(), pos.getY(), pos.getZ());
-                System.out.println("Added: [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]");
 
                 //Display it
                 clientLevel.addEntity(display);

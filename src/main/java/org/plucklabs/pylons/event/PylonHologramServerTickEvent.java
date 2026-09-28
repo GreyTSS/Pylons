@@ -156,8 +156,12 @@ public class PylonHologramServerTickEvent {
                     if (pylon.checkHologramRange(player)) {
                         displayPulsing.remove(uuid);
                         var tier = pylon.getLowestInvalidTier();
-                        System.out.println(tier.getSerializedName());
-                        cacheInfo(data, player.getUUID(), new HologramPositions(pylon.getBlockPos(), pylon.getLowestInvalidTier(), blockItem.getBlock().defaultBlockState()));
+                        //System.out.println(tier.getSerializedName());
+                        if(tier != pylon.getTier()) {
+                            cacheInfo(data, uuid, new HologramPositions(pylon.getBlockPos(), pylon.getLowestInvalidTier(), blockItem.getBlock().defaultBlockState()));
+                        } else {
+                            cacheInfo(data, uuid, DEFAULT_BLANK_HOLOGRAM);
+                        }
                         return;
                     }
                 }
